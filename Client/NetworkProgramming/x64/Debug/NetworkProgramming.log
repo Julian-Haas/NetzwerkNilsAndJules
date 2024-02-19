@@ -1,0 +1,7 @@
+﻿  NetworkProgramming.cpp
+C:\Users\Julian Peter Haas\Desktop\Client\NetworkProgramming\NetworkProgramming.cpp(38,40): warning C4267: 'argument': conversion from 'size_t' to 'socklen_t', possible loss of data
+C:\Users\Julian Peter Haas\Desktop\Client\NetworkProgramming\NetworkProgramming.cpp(48,54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Julian Peter Haas\Desktop\Client\NetworkProgramming\NetworkProgramming.cpp(65,33): warning C4244: 'argument': conversion from 'SOCKET' to 'int', possible loss of data
+C:\Users\Julian Peter Haas\Desktop\Client\NetworkProgramming\NetworkProgramming.cpp(75,20): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'size_t'
+C:\Users\Julian Peter Haas\Desktop\Client\NetworkProgramming\NetworkProgramming.cpp(75,20): message : consider using '%zd' in the format string
+  NetworkProgramming.vcxproj -> C:\Users\Julian Peter Haas\Desktop\Client\x64\Debug\NetworkProgramming.exe

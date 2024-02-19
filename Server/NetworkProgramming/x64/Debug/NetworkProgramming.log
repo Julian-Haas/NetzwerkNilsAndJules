@@ -1,0 +1,4 @@
+﻿  NetworkProgramming.cpp
+C:\Users\Julian Peter Haas\Desktop\Server\NetworkProgramming\NetworkProgramming.cpp(37,63): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Julian Peter Haas\Desktop\Server\NetworkProgramming\NetworkProgramming.cpp(56,30): warning C4244: 'argument': conversion from 'SOCKET' to 'int', possible loss of data
+  NetworkProgramming.vcxproj -> C:\Users\Julian Peter Haas\Desktop\Server\x64\Debug\NetworkProgramming.exe
