@@ -7,7 +7,160 @@
 #include <iphlpapi.h>
 #include <WS2tcpip.h>
 #include <iostream>
+#include <string.h>
 
+SOCKET globalSocket;
+
+bool CheckUsernameForExistance(std::string Username)
+{
+    // prüfe username
+    std::cout << "Error: Server is not implemented yet, returned a default value.\n";
+    return true;
+}
+
+bool CheckPassword(std::string Password)
+{
+    // prüfe password
+    std::cout << "Error: Server is not implemented yet, returned a default value.\n";
+    return true;
+}
+
+void DisplayHistoryOfUser(std::string username)
+{
+    //retrieve data and display it
+    //send(globalSocket, constMessage, sizeof(constMessage), 0); // Username noch mitgeben
+    std::cout << "This is a placepolder for the history of " << username << ".\n";
+}
+
+void PostMode() // wie besser? klasse?
+{
+    std::string message = "";
+    while (true)
+    {
+        std::cout << "Please enter a message with maximum 280 characters which you want to post.\n";
+        std::cin >> message;
+        if (message.length() > 280)
+        {
+            std::cout << "Your message was too long.\n";
+            continue;
+        }
+        const char* constMessage = message.c_str();
+        send(globalSocket, constMessage, sizeof(constMessage), 0); // Username noch mitgeben
+        //nachricht auf dem server speichern mit uhrzeit und username
+        std::cout << "You posted this message: " << message << "\n";
+        break;
+    }
+}
+
+void UserSearchMode()
+{
+    std::string username = "";
+    while (true)
+    {
+        std::cout << "Please enter a username whose history you want to see.\n";
+        std::cin >> username;
+        if (CheckUsernameForExistance(username))
+        {
+            DisplayHistoryOfUser(username);
+            break;
+        }
+        std::cout << "Following user is unknown: " << username << "\n";
+        break;
+    }
+}
+
+
+void AccountPage(std::string username)
+{
+    std::string chosenOption = "";
+    while (chosenOption != "4")
+    {
+        std::cout << "Press 1 to show your own history, 2 to post a tweet, 3 to search for a user, or 4 to logout.\n";
+        std::cin >> chosenOption;
+        if (chosenOption.length() == 1)
+        {
+            switch (chosenOption[0])
+            {
+                case '1':
+                    DisplayHistoryOfUser(username);
+                    break;
+                case '2':
+                    PostMode();
+                    break;
+                case '3':
+                    UserSearchMode();
+                    break;
+                case '4':
+                    break;
+                default:
+                    std::cout << "Wrong input.\n";
+                    break;
+            }
+        }  
+    }
+    std::cout << "Logout was successful.\n";
+}
+
+void Login()
+{
+    std::string enteredUsername = "";
+    std::string enteredPassword = "";
+    while (true)
+    {
+        std::cout << "Please enter your username.\n";
+        std::cin >> enteredUsername;
+        if (CheckUsernameForExistance(enteredUsername))
+        {
+            std::cout << "Please enter your password.\n";
+            std::cin >> enteredPassword;
+            if (CheckPassword(enteredPassword))
+            {
+                AccountPage(enteredUsername);
+                break;
+            }
+        }
+        std::cout << "This Username doesn't exist.\n";       
+    }
+}
+
+void Register()
+{
+    std::string enteredUsername = "";
+    std::string enteredPassword = "";
+    while (true)
+    {
+        std::cout << "Please enter a username.\n";
+        std::cin >> enteredUsername;
+        if (CheckUsernameForExistance(enteredUsername)) // abfrage negieren nach erfolgreichem test
+        {
+            std::cout << "Your chosen username is " << enteredUsername << ".\n";
+            std::cout << "Please enter a password.\n";
+            std::cin >> enteredPassword;
+            std::cout << "You registered succesfully.\n";
+            // write to database
+            AccountPage(enteredUsername);
+            break;
+        }
+    }
+}
+
+void Start()
+{
+    std::string chosenOption = "";
+    while (true)
+    {
+        std::cout << "Please enter 1 to login or 2 to register\n";
+        std::cin >> chosenOption;
+        if (chosenOption == "1")
+        {
+            Login();
+        }
+        else if (chosenOption == "2")
+        {
+            Register();
+        }
+    }
+}
 
 int main(int argc, char* argv[])
 {
@@ -39,6 +192,7 @@ int main(int argc, char* argv[])
     printf("%s\n", adressBuffer);
     printf("Creating socket...\n");
     SOCKET serverSocket = socket(server->ai_family, server->ai_socktype, server->ai_protocol);
+    globalSocket = serverSocket;
     if (serverSocket == INVALID_SOCKET)
     {
         fprintf(stderr, "socket(9 failed. %d)\n", WSAGetLastError());
@@ -79,18 +233,17 @@ int main(int argc, char* argv[])
                 printf("Connection closed.\n");
                 return 1;
             }
-        }
-        if (_kbhit())
-        {
-            char read[4096];
-            if (!fgets(read, 4096, stdin))
-            {
-                break;
-            }
-            printf("Sending %s", read);
-            int bytesSent = send(serverSocket, read, sizeof(read), 0);
-            printf("%d bytes sent\n", bytesSent);
-        }
+        }       
+        Start();
+
+            //char read[4096];
+            //if (!fgets(read, 4096, stdin))
+            //{
+            //    break;
+            //}
+            //printf("Sending %s", read);
+            //int bytesSent = send(serverSocket, read, sizeof(read), 0);
+            //printf("%d bytes sent\n", bytesSent);
     }
     WSACleanup();
     return 0;
