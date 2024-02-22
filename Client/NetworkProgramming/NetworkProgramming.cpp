@@ -7,7 +7,7 @@
 #include <iphlpapi.h>
 #include <WS2tcpip.h>
 #include <iostream>
-#include <string.h>
+#include <string>
 
 SOCKET globalSocket;
 
@@ -32,20 +32,23 @@ void DisplayHistoryOfUser(std::string username)
     std::cout << "This is a placepolder for the history of " << username << ".\n";
 }
 
-void PostMode() // wie besser? klasse?
+void PostMode() // wie besser sockel mitgeben? klasse?
 {
-    std::string message = "";
+    std::string message;
     while (true)
     {
         std::cout << "Please enter a message with maximum 280 characters which you want to post.\n";
-        std::cin >> message;
+        std::cin.ignore(10000, '\n');
+        //std::cin.clear();
+        //std::cin.sync();
+        std::getline(std::cin, message);
         if (message.length() > 280)
         {
             std::cout << "Your message was too long.\n";
             continue;
         }
         const char* constMessage = message.c_str();
-        send(globalSocket, constMessage, sizeof(constMessage), 0); // Username noch mitgeben
+        send(globalSocket, constMessage, 4096, 0); // Username noch mitgeben
         //nachricht auf dem server speichern mit uhrzeit und username
         std::cout << "You posted this message: " << message << "\n";
         break;
@@ -72,31 +75,40 @@ void UserSearchMode()
 
 void AccountPage(std::string username)
 {
-    std::string chosenOption = "";
+    std::string chosenOption;
+    bool correctInputFlag;
     while (chosenOption != "4")
     {
+        correctInputFlag = false;
         std::cout << "Press 1 to show your own history, 2 to post a tweet, 3 to search for a user, or 4 to logout.\n";
-        std::cin >> chosenOption;
+        std::cin >> chosenOption;       
         if (chosenOption.length() == 1)
         {
             switch (chosenOption[0])
             {
                 case '1':
                     DisplayHistoryOfUser(username);
+                    correctInputFlag = true;
                     break;
                 case '2':
                     PostMode();
+                    correctInputFlag = true;
                     break;
                 case '3':
                     UserSearchMode();
+                    correctInputFlag = true;
                     break;
                 case '4':
+                    correctInputFlag = true;
                     break;
                 default:
-                    std::cout << "Wrong input.\n";
                     break;
             }
-        }  
+        }
+        if (!correctInputFlag)
+        {
+            std::cout << "Wrong Input.\n";
+        }
     }
     std::cout << "Logout was successful.\n";
 }
@@ -236,15 +248,42 @@ int main(int argc, char* argv[])
         }       
         Start();
 
-            //char read[4096];
-            //if (!fgets(read, 4096, stdin))
-            //{
-            //    break;
-            //}
-            //printf("Sending %s", read);
-            //int bytesSent = send(serverSocket, read, sizeof(read), 0);
-            //printf("%d bytes sent\n", bytesSent);
     }
     WSACleanup();
     return 0;
 }
+
+
+//mutmaßlich Müll, später löschen
+
+//char read[4096];
+//if (!fgets(read, 4096, stdin))
+//{
+//    break;
+//}
+//printf("Sending %s", read);
+//int bytesSent = send(serverSocket, read, sizeof(read), 0);
+//printf("%d bytes sent\n", bytesSent);
+
+//int messageLength = message.length();
+//std::cout << "messageLength: " << messageLength << "\n";
+//std::cout << "message: " << message << "\n";
+//int messageLength = strlen(message)-1;
+//char* test = new char[messageLength];
+//const char* constMessage = message.c_str();
+//std::cout << messageLength << "\n";
+//char read[4096] = {'s', 's', 's', 's', 's', 's'};
+//char read2[4096] = { '1', '2', '3'};
+//std::cout << read2 << "\n";
+//std::cout << sizeof(read2) << "\n";
+//printf("Sending %s", read);
+//int bytesSent = send(globalSocket, read2, sizeof(read), 0);
+//printf("%d bytes sent\n", bytesSent);
+//std::cout << message << "\n";
+//message = "idsugfsuzdfg dsifusghdfiusgd";
+//std::cout << constMessage << "\n";
+//const char* constMessage = "siugsdhsiudfz fizsdfisdfuz";
+//string to const char*
+//string to char array
+//char read[4096] = message.c_str();
+//char read[4096] = "siugsdhsiudfz fizsdfisdfuz";
