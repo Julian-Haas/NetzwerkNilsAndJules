@@ -89,22 +89,37 @@ int main(int argc, char* argv[])
                     char request[4096];
                     int bytesReceived = recv(i, request, sizeof(request), 0);
 
-                    if (bytesReceived < 1)
+                    switch(request[0])
                     {
-                        FD_CLR(i, &master);
-                        closesocket(i);
-                        printf("Closed socket\n");
+                    case '1': 
+                        printf("Registration request"); 
+                        send(i, "Regestrierungsversuch!", 4096, 0); 
+                        break;
+                    case '4':
+                        printf("tweet posted \n");
+                        send(i, "tweet_posted", 4096, 0);
+                        break;
+                    default: 
+                        printf("unhandled request");
+                        break;
                     }
-                    else
-                    {
-                        for (int j = 0; j < bytesReceived; ++j)
-                        {
-                            request[j] = toupper(request[j]);
-                        }
-                        printf("Sending: %s\n", request);
-                        int bytesSent = send(i, request, sizeof(request), 0);
-                        printf("Sending %d bytes\n", bytesSent);
-                    }
+
+               //if (bytesReceived < 1)
+               //{
+               //    FD_CLR(i, &master);
+               //    closesocket(i);
+               //    printf("Closed socket\n");
+               //}
+               //else
+               //{
+               //    for (int j = 0; j < bytesReceived; ++j)
+               //    {
+               //        request[j] = toupper(request[j]);
+               //    }
+               //    printf("Sending: %s\n", request);
+               //    int bytesSent = send(i, request, sizeof(request), 0);
+               //    printf("Sending %d bytes\n", bytesSent);
+               //}
                     //FD_CLR(i, &master);
                     //closesocket(i);
                 }

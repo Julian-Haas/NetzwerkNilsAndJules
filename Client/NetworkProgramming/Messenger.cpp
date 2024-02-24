@@ -79,7 +79,7 @@ void Messenger::DisplayHistoryOfUser(std::string username)
 
 void Messenger::PostMode() // wie besser sockel mitgeben? klasse?
 {
-    std::string message;
+    std::string message; 
     while (true)
     {
         std::cout << "Please enter a message with maximum 280 characters which you want to post.\n";
@@ -92,11 +92,23 @@ void Messenger::PostMode() // wie besser sockel mitgeben? klasse?
             std::cout << "Your message was too long.\n";
             continue;
         }
-        const char* constMessage = message.c_str();
+        const char* constMessage ='4' + message.c_str();
         send(serverSocket, constMessage, 4096, 0); // Username noch mitgeben
         //nachricht auf dem server speichern mit uhrzeit und username
         std::cout << "You posted this message: " << message << "\n";
         break;
+    }
+    while(true)
+    {
+        char anwser[4096]; 
+        int anwserSize = 0; 
+        anwserSize = recv(serverSocket, anwser, 4096, 0);
+        if(anwserSize > 0)
+        {
+            printf(anwser);
+            printf("\n"); 
+            break; 
+        }
     }
 }
 
