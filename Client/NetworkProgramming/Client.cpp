@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
             std::cin >> enteredPassword;
             if (CheckPasswordForCorrectness(enteredUsername, enteredPassword))
             {
-                AccountPage(enteredUsername);
+                ModeAccountPage(enteredUsername);
                 break;
             }
         }
