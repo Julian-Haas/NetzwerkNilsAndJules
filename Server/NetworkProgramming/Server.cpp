@@ -45,6 +45,7 @@ bool HandleRegistration(int& index, std::vector<std::vector<std::string>>& user,
 
 void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::vector<std::vector<std::string>> user, int index)
 {
+	std::cout << request << "\n";
 	readingRequest = true;
 	bool succes = NULL;
 	switch (request[0])

@@ -1,5 +1,5 @@
-﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: Das Zwischenverzeichnis (x64\Debug\) enthält freigegebene Dateien aus einem anderen Projekt (NetworkProgramming.vcxproj). Dies kann zu einem falschen Bereinigungs- und Neuerstellungsverhalten führen.
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (NetworkProgramming.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   Server.cpp
-C:\Users\nilsh\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(129,60): warning C4267: "Argument": Konvertierung von "size_t" nach "int", Datenverlust möglich
-C:\Users\nilsh\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(149,24): warning C4244: "Argument": Konvertierung von "SOCKET" in "int", möglicher Datenverlust
-  NetworkProgramming.vcxproj -> C:\Users\nilsh\NetzwerkNilsAndJules\Server\x64\Debug\ServerSolution2.exe
+F:\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(126,60): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+F:\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(146,24): warning C4244: 'argument': conversion from 'SOCKET' to 'int', possible loss of data
+  NetworkProgramming.vcxproj -> F:\NetzwerkNilsAndJules\Server\x64\Debug\ServerSolution2.exe

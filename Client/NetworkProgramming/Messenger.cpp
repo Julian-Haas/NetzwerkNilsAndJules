@@ -24,6 +24,7 @@ enum Messenger::protocol
 void Messenger::SetRequestCode(int requestCode)
 {
     serverRequest = char(requestCode);
+    //std::cout << serverRequest << "\n";
 }
 
 void Messenger::ExtendRequest(std::string appendedParameter)
@@ -201,6 +202,7 @@ void Messenger::Register()
         std::cout << "Please enter a password.\n";
         std::getline(std::cin, enteredPassword);
         SetRequestCode(RegisterUser_Client);
+        //std::cout << RegisterUser_Client << "\n";
         ExtendRequest(enteredUsername);
         ExtendRequest(enteredPassword);
         SendToServer();
@@ -328,6 +330,15 @@ void Messenger::SendToServer()
 
 void Messenger::MainMenu()
 {
+    //std::string usaaaname = "Nils";
+    //std::string paaasword = "1234";
+    //SetRequestCode(RegisterUser_Client);
+    //ExtendRequest(usaaaname);
+    //ExtendRequest(paaasword);
+    //SendToServer();
+    // 54Nils41234
+    //std::cout << "Keycode: " << char(serverRequest[0]) << "\n";
+    std::cout << "Keycode: " << serverRequest << "\n";
     std::string chosenOption = "";
     while (true)
     {

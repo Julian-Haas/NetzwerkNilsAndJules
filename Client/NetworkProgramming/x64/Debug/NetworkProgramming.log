@@ -1,17 +1,8 @@
-﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: Das Zwischenverzeichnis (x64\Debug\) enthält freigegebene Dateien aus einem anderen Projekt (ClientSolution.vcxproj, NetworkProgramming.vcxproj). Dies kann zu einem falschen Bereinigungs- und Neuerstellungsverhalten führen.
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (ClientSolution.vcxproj, NetworkProgramming.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   Messenger.cpp
-C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(31,24): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
-C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(49,24): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
-C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(58,24): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
-C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(192,28): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
-C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(205,28): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
-C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(249,28): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
-C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(262,28): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
-C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(313,40): warning C4267: "Argument": Konvertierung von "size_t" nach "socklen_t", Datenverlust möglich
-C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(323,54): warning C4267: "Argument": Konvertierung von "size_t" nach "int", Datenverlust möglich
-C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(344,33): warning C4244: "Argument": Konvertierung von "SOCKET" in "int", möglicher Datenverlust
-C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(354,20): warning C4477: "printf": Die Formatzeichenfolge "%d" erfordert ein Argument vom Typ "int", das variadic-Argument "1" weist aber den Typ "size_t" auf.
-  C:\Users\nilsh\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(354,20):
-  Verwenden Sie ggf. "%zd" in der Formatzeichenfolge.
-  
-  NetworkProgramming.vcxproj -> C:\Users\nilsh\NetzwerkNilsAndJules\Client\x64\Debug\ClientSolution2.exe
+F:\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(251,40): warning C4267: 'argument': conversion from 'size_t' to 'socklen_t', possible loss of data
+F:\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(261,54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+F:\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(282,33): warning C4244: 'argument': conversion from 'SOCKET' to 'int', possible loss of data
+F:\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(314,20): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'size_t'
+F:\NetzwerkNilsAndJules\Client\NetworkProgramming\Messenger.cpp(314,20): message : consider using '%zd' in the format string
+  NetworkProgramming.vcxproj -> F:\NetzwerkNilsAndJules\Client\x64\Debug\ClientSolution2.exe
