@@ -269,56 +269,55 @@ void Messenger::StartMessenger(int argc, char* argv[])
 
 bool Messenger::WaitForServerResponse()
 {
-    //while (true)
-    //{
-    //    fd_set reads;
-    //    FD_ZERO(&reads);
-    //    FD_SET(serverSocket, &reads);
-    //    timeval timeout;
-    //    timeout.tv_sec = 0;
-    //    timeout.tv_usec = 100000;
-    //    if (select(serverSocket + 1, &reads, 0, 0, &timeout) < 0)
-    //    {
-    //        fprintf(stderr, "select() failed. (%d)\n", WSAGetLastError());
-    //        return false;
-    //    }
+    while (true)
+    {
+        fd_set reads;
+        FD_ZERO(&reads);
+        FD_SET(serverSocket, &reads);
+        timeval timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 100000;
+        if (select(serverSocket + 1, &reads, 0, 0, &timeout) < 0)
+        {
+            fprintf(stderr, "select() failed. (%d)\n", WSAGetLastError());
+            return false;
+        }
 
-    //    if (FD_ISSET(serverSocket, &reads))
-    //    {
-    //        char read[4096];
-    //        int bytesReceived = recv(serverSocket, read, sizeof(read), 0);
+        if (FD_ISSET(serverSocket, &reads))
+        {
+            char read[4096];
+            int bytesReceived = recv(serverSocket, read, sizeof(read), 0);
 
-    //        switch (read[0])
-    //        {
-    //        case 101:
-    //            return true;
-    //            break;
-    //        case 102:
-    //            return true;
-    //            break;
-    //        case 103:
-    //            DisplayReceivedHistory(read);
-    //            return true;
-    //            break;
-    //        case 104:
-    //            return true;
-    //            break;
-    //        case 105:
-    //            return true;
-    //            break;
-    //        default:
-    //            break;
-    //        }
-    //        printf("Received size: %d\n", sizeof(read));
-    //        printf("Received: %s", read);
-    //        if (bytesReceived < 1)
-    //        {
-    //            printf("Connection closed.\n");
-    //            return false;
-    //        }
-    //    }
-    //}
-    return false;
+            switch (read[0])
+            {
+            case 101:
+                return (read[1] == 1);
+                break;
+            case 102:
+                return (read[1] == 1);
+                break;
+            case 103:
+                DisplayReceivedHistory(read);
+                return true;
+                break;
+            case 104:
+                return (read[1] == 1);
+                break;
+            case 105:
+                return (read[1] == 1);
+                break;
+            default:
+                break;
+            }
+            printf("Received size: %d\n", sizeof(read));
+            printf("Received: %s", read);
+            if (bytesReceived < 1)
+            {
+                printf("Connection closed.\n");
+                return false;
+            }
+        }
+    }
 }
 
 void Messenger::SendToServer()
@@ -348,6 +347,13 @@ void Messenger::MainMenu()
 
 void Messenger::DisplayReceivedHistory(char container[])
 {
+    //int AmountOfMessages = int(container[1]);
+    //int LengthOfUsername = int(container[2]);
+    //std::string username(container + 3, container + LengthOfUsername + 3);
+
+    //int LengthOfMessage = int(container[LengthOfUsername + 4]) * 256 + int(container[LengthOfUsername + 4]);
+
+
 
 }
 
