@@ -7,75 +7,64 @@
 #include <WS2tcpip.h>
 #include <string>
 #include <vector>
+#include <iostream>
 
-bool  HandleRegistration(int& index, std::vector<std::vector<std::string>>& user, char request[])
+bool HandleRegistration(int& index, std::vector<std::vector<std::string>>& user, char request[])
 {
+	int nameLength = request[1] - '0';
+	std::cout << "Länge des Names: " << nameLength << "\n";
+	std::string username(request + 2, nameLength); // Starte ab dem dritten Zeichen (Index 2) und lese nameLength Zeichen
+	std::cout << "Username: " << username << "\n";
 
-	/*
-	Aufbau einer NAchricht vom Client: 
-	RequestCode|UsernameLenght|UserName|PasswortLenght|Passwort -> das alles in einem Chararray verpackt. Die Trennstriche sind nicht vorhanden. 
-	Später soll dazwischen ein "null zeichen" sein. Wie könnte ich hier jetzt probeweise an den Username und das Passwort kommen? 
-	*/
-	int nameLenght = (int)request[1]; 
-	std::string username; 
-	//herrausfiltern des nutzernamens
-	for(int i = 0; i <= nameLenght; i++)
-	{
-		if(i==0)
-		{
-			continue; //ignore request code
-		}
-		username+=request[i];
-	}
+	int passwordStart = nameLength + 2; // Start des Passworts: 2 für den Request-Code und die Benutzerlänge, plus 1 für das Nullzeichen
+	int passwordLength = request[passwordStart] - '0';
+	std::string password(request[passwordStart + 1], passwordLength); // Starte ab dem Passwortstart + 1, um das Nullzeichen zu überspringen
+	std::cout << "Password: " << password << "\n";
 
-	std::string passwort;
-	int passwortLenght = (int)request[nameLenght+1];
-	//herrausfiltern des nutzernamens
-	for (int i = 0; i <= nameLenght; i++)
-	{
-		if (i == 0)
-		{
-			continue; //ignore request code
-		}
-		passwort += request[i];
-	}
+	//bool uniqueUsername = true;
+	//for (int i = 0; i < index; i++)
+	//{
+	//	if (user[i][0] != "")
+	//	{
+	//		if (username == user[i][0])
+	//		{
+	//			uniqueUsername = false;
+	//			break;
+	//		}
+	//	}
+	//}
 
-	bool uniqueUsername = true; 
-	for (int i = 0; i < index; i++)
-	{
-		if (!user[i][0].empty())
-		{
-			if (username == user[i][0])
-			{
-				uniqueUsername = false; 
-				break; 
-			}
-		}
-	}
-	if(uniqueUsername)
-	{
-		user[index][0] = username;
-		user[index][1] = passwort;
-		index++; 
-	}
-	return uniqueUsername; 
-
+		std::vector<std::string> newUser;
+		newUser.push_back(username);
+		newUser.push_back(password);
+		user.push_back(newUser);
+		index++;
+		return true; 
 }
-void HandleIncomingRequest(bool &readingRequest, SOCKET i, char request[], std::vector<std::vector<std::string>> user, int index)
+
+
+void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::vector<std::vector<std::string>> user, int index)
 {
-	readingRequest = true; 
+	readingRequest = true;
+	bool succes = NULL;
 	switch (request[0])
 	{
-	case '5':
+	case 5:
 		printf("Handle Username: ");
-		bool succes = HandleRegistration(index, user, request); 
-		if(succes)
-		{
-			send(i, "succes...", 4096, 0);
-		} else 
-		{
-			send(i, "failed...", 4096, 0);
-		}
+		succes = HandleRegistration(index, user, request);
+			if(succes != NULL)
+			{
+				if (succes)
+				{
+					send(i, "succes...", 4096, 0);
+					break;
+				}
+				else
+				{
+					send(i, "failed...", 4096, 0);
+					break;
+				}
+			}
 		readingRequest = false;
 		break;
 	case '2':
@@ -99,6 +88,7 @@ void HandleIncomingRequest(bool &readingRequest, SOCKET i, char request[], std::
 		break;
 	}
 }
+
 int main(int argc, char* argv[])
 {
 	//das hier später raus löschen und in klasse einbauen
