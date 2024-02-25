@@ -9,37 +9,45 @@
 #include <vector>
 #include <iostream>
 
-bool HandleRegistration(int& index, std::vector<std::vector<std::string>>& user, char request[])
+enum protocol
+{
+	CheckUsernameForExistance_Client = 1,
+	CheckPasswordForCorrectness_Client = 2,
+	DisplayHistoryOfUser_Client = 3,
+	PostAMessage_Client = 4,
+	RegisterUser_Client = 5,
+	CheckUsernameForExistance_Server = 101,
+	CheckPasswordForCorrectness_Server = 102,
+	DisplayHistoryOfUser_Server = 103,
+	PostAMessage_Server = 104,
+	RegisterUser_Server = 105
+};
+
+std::string GetPassword(char request[], int start, int lenght)
+{
+	std::string password = ""; 
+	for(int i = start; i < (start +lenght); i++)
+	{
+		password += request[i]; 
+	}
+	return password; 
+}
+bool CheckForUserName(int& index, std::vector<std::vector<std::string>>& user, char request[])
 {
 	int nameLength = request[1] - '0';
-	std::cout << "Länge des Names: " << nameLength << "\n";
+	std::cout << "Laenge des Names: " << nameLength << "\n";
 	std::string username(request + 2, nameLength); // Starte ab dem dritten Zeichen (Index 2) und lese nameLength Zeichen
 	std::cout << "Username: " << username << "\n";
-
-	int passwordStart = nameLength + 2; // Start des Passworts: 2 für den Request-Code und die Benutzerlänge, plus 1 für das Nullzeichen
-	int passwordLength = request[passwordStart] - '0';
-	std::string password(request[passwordStart + 1], passwordLength); // Starte ab dem Passwortstart + 1, um das Nullzeichen zu überspringen
-	std::cout << "Password: " << password << "\n";
-
-	//bool uniqueUsername = true;
-	//for (int i = 0; i < index; i++)
-	//{
-	//	if (user[i][0] != "")
-	//	{
-	//		if (username == user[i][0])
-	//		{
-	//			uniqueUsername = false;
-	//			break;
-	//		}
-	//	}
-	//}
-
-		std::vector<std::string> newUser;
-		newUser.push_back(username);
-		newUser.push_back(password);
-		user.push_back(newUser);
-		index++;
-		return true; 
+	bool uniqueUsername = true;
+	for (int i = 0; i < index; i++)
+	{
+		if (username == user[i][0])
+		{
+			return false; 
+		}
+	}
+	//user[index].push_back(username);
+	return true; 
 }
 
 
@@ -47,41 +55,45 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::
 {
 	std::cout << request << "\n";
 	readingRequest = true;
-	bool succes = NULL;
-	switch (request[0])
+	bool succes = false;
+	int passwortStart; 
+	int passwortLenght; 
+	std::string password= " ";
+	std::string anwser=" ";
+	switch(request[0])
 	{
-	case 5:
+	case 1: 
 		printf("Handle Username: ");
-		succes = HandleRegistration(index, user, request);
-			if(succes != NULL)
-			{
-				if (succes)
-				{
-					send(i, "succes...", 4096, 0);
-					break;
-				}
-				else
-				{
-					send(i, "failed...", 4096, 0);
-					break;
-				}
-			}
+		succes = CheckForUserName(index, user, request); 
+		anwser = char(CheckUsernameForExistance_Server); 
+		anwser.append(std::to_string(1)); 
+		char formatedAnwser[4096]; 
+		strcpy_s(formatedAnwser, anwser.c_str());
+		send(i, formatedAnwser, 4096, 0);
 		readingRequest = false;
-		break;
-	case '2':
+		break; 
+	case 2:
 		printf("Handle Passwort: ");
 		send(i, "Checking if passwort is correct...", 4096, 0);
 		readingRequest = false;
 		break;
-	case '3':
+	case 3:
 		printf("Handle User History: ");
 		send(i, "Searching for your Browser History...disgusting...", 4096, 0);
 		readingRequest = false;
 		break;
-	case '4':
+	case 4:
 		printf("tweet posted \n");
 		send(i, "tweet posted", 4096, 0);
 		readingRequest = false;
+		break;
+	case 5:
+		passwortStart = request[1] + 1 - '0';
+		passwortLenght = request[passwortStart - 1]-'0';
+		password=GetPassword(request, passwortStart, passwortLenght); 
+		//user[index].push_back(password);
+		std::cout << "Password: " << password << std::endl; 
+		readingRequest = false; 
 		break;
 	default:
 		printf("unhandled request");
@@ -93,9 +105,11 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::
 int main(int argc, char* argv[])
 {
 	//das hier später raus löschen und in klasse einbauen
-	std::vector<std::vector<std::string>> user; 
+	std::vector<std::vector<std::string>> user(10); 
+	std::string test = "Halts maul"; 
+	user[0].push_back(test); 
 	int index = 0; 
-	
+	std::cout << user[0][0] << std::endl; 
 	//server set up
 	WSAData d;
 	bool readingRequest = false;
