@@ -46,6 +46,7 @@ bool CheckForUserName(int& index, std::vector<std::vector<std::string>>& user, c
 			return false; 
 		}
 	}
+	user[index][0] = username; 
 	//user[index].push_back(username);
 	return true; 
 }
@@ -65,11 +66,22 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::
 	case 1: 
 		printf("Handle Username: ");
 		succes = CheckForUserName(index, user, request); 
-		anwser = char(CheckUsernameForExistance_Server); 
-		anwser.append(std::to_string(1)); 
-		char formatedAnwser[4096]; 
-		strcpy_s(formatedAnwser, anwser.c_str());
-		send(i, formatedAnwser, 4096, 0);
+		if(succes)
+		{
+			anwser = char(CheckUsernameForExistance_Server);
+			anwser.append(std::to_string(1));
+			char formatedAnwser[4096];
+			strcpy_s(formatedAnwser, anwser.c_str());
+			std::cout << "name is valid!" << std::endl; 
+			send(i, formatedAnwser, 4096, 0);
+		} else 
+		{
+			anwser = char(CheckUsernameForExistance_Server);
+			anwser.append(std::to_string(2));
+			char formatedAnwser[4096];
+			strcpy_s(formatedAnwser, anwser.c_str());
+			send(i, formatedAnwser, 4096, 0);
+		}
 		readingRequest = false;
 		break; 
 	case 2:
@@ -88,12 +100,23 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::
 		readingRequest = false;
 		break;
 	case 5:
-		passwortStart = request[1] + 1 - '0';
-		passwortLenght = request[passwortStart - 1]-'0';
-		password=GetPassword(request, passwortStart, passwortLenght); 
-		//user[index].push_back(password);
-		std::cout << "Password: " << password << std::endl; 
-		readingRequest = false; 
+		passwortStart = request[1] + 3 - '0';
+		passwortLenght = request[passwortStart - 1] - '0';
+		password = GetPassword(request, passwortStart, passwortLenght);
+		std::cout << "Password: " << password << std::endl;
+		user[index][1] = password;
+
+		// Bestätigungsnachricht vorbereiten
+		anwser = "";
+		anwser += char(RegisterUser_Server); // Protokollnummer für die Bestätigung
+		anwser += '1'; // Bestätigung, dass das Passwort empfangen wurde
+		std::cout << anwser[1] << "\n";
+		char formatedAnwser[4096];
+		strcpy_s(formatedAnwser, anwser.c_str());
+		// Antwort senden
+		std::cout << formatedAnwser << std::endl; 
+		send(i, formatedAnwser, 4096, 0);
+		readingRequest = false;
 		break;
 	default:
 		printf("unhandled request");
@@ -105,9 +128,7 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::
 int main(int argc, char* argv[])
 {
 	//das hier später raus löschen und in klasse einbauen
-	std::vector<std::vector<std::string>> user(10); 
-	std::string test = "Halts maul"; 
-	user[0].push_back(test); 
+	std::vector<std::vector<std::string>> user(10, std::vector<std::string>(2));
 	int index = 0; 
 	std::cout << user[0][0] << std::endl; 
 	//server set up

@@ -289,7 +289,7 @@ bool Messenger::WaitForServerResponse()
         {
             char read[4096];
             int bytesReceived = recv(serverSocket, read, sizeof(read), 0);
-
+            int val = 0; 
             switch (read[0])
             {
             case 101:
@@ -306,7 +306,8 @@ bool Messenger::WaitForServerResponse()
                 return (read[1] == 1);
                 break;
             case 105:
-                return (read[1] == 1);
+                val = read[1] - '0'; 
+                return (val == 1);
                 break;
             default:
                 break;
