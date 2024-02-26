@@ -293,20 +293,23 @@ bool Messenger::WaitForServerResponse()
             switch (read[0])
             {
             case 101:
-                return (read[1] == 1);
+                val = read[1] - '0';
+                return (val == 1);
                 break;
             case 102:
-                return (read[1] == 1);
+                val = read[1] - '0';
+                return (val == 1);
                 break;
             case 103:
                 DisplayReceivedHistory(read);
                 return true;
                 break;
             case 104:
-                return (read[1] == 1);
+                val = read[1] - '0';
+                return (val == 1);
                 break;
             case 105:
-                val = read[1] - '0'; 
+                val = read[1] - '0';
                 return (val == 1);
                 break;
             default:
