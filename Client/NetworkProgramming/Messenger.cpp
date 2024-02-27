@@ -29,7 +29,8 @@ void Messenger::SetRequestCode(int requestCode)
 
 void Messenger::ExtendRequest(std::string appendedParameter)
 {
-    serverRequest.append(std::to_string(appendedParameter.length()));
+    char lenght = '0' + appendedParameter.length(); 
+    serverRequest += lenght; 
     serverRequest.append(appendedParameter);
 }
 

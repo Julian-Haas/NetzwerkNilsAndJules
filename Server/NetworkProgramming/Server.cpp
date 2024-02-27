@@ -36,10 +36,9 @@ std::string GetPassword(char request[], int start, int lenght)
 std::string ExtractTweet(char request[])
 {
 
-	int tweetOffset = request[1] - '0'; 
-	tweetOffset = tweetOffset + 2; 
-	int msgLenght = request[tweetOffset - 1]; 
-	std::string tweet = std::string(request + tweetOffset, msgLenght);
+	int msgLenght = request[1] - '0';
+	std::cout << request[1] <<"\n";
+	std::string tweet = std::string(request + 2, msgLenght);
 	return tweet; 
 }
 
