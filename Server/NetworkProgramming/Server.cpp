@@ -9,6 +9,21 @@
 #include <vector>
 #include <iostream>
 
+
+//speichern der nutzer 
+std::vector<std::vector<std::string>> user(10, std::vector<std::string>(2));
+
+//speichern der tweets + nutzernamen 
+std::vector<std::vector<std::string>> tweets;
+
+//counter der nutzer
+int index = 0;
+
+//id des nutzers der gerade angemeldet ist
+int userIndex = 0;
+int userTweetID = 0; 
+//tweet counter
+int tweetCounter = 0;
 enum protocol
 {
 	CheckUsernameForExistance_Client = 1,
@@ -42,25 +57,72 @@ std::string ExtractTweet(char request[])
 	return tweet; 
 }
 
-bool CheckForUserName(int* index, std::vector<std::vector<std::string>>* user, char request[], int* userIndex) {
+bool CheckForUserName(char request[]) {
 	int nameLength = request[1] - '0';
 	std::cout << "Laenge des Names: " << nameLength << "\n";
 	std::string username = std::string(request + 2, nameLength);
 	std::cout << "Username: " << username << "\n";
 	bool uniqueUsername = true;
-	for (int i = 0; i < *index; i++) {
-		if (username == (*user)[i][0]) {
-			(*userIndex) = i; 
+	for (int i = 0; i < index; i++) {
+		userTweetID = i; 
+		if (username == user[i][0]) {
+			userIndex = i; 
 			return true;
 		}
 	}
-	(*user)[*index][0] = username;
+	user[index][0] = username;
 	return false;
 }
 
-void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::vector<std::vector<std::string>>* user, std::vector<std::vector<std::string>>* tweets, int* index, int* userIndex, int* tweetCounter) {
-	std::cout << user << std::endl;
-	std::cout << request << "\n";
+std::string GetUserPosts(char request[])
+{
+	std::string answer;
+	int usernameLenght = request[1] - '0';
+	std::string username = std::string(request + 2, usernameLenght);
+
+	//speichern des Request Codes, der Länge des Nutzernamens + nutzernamen gemäß protokoll
+	char msgCode = char(DisplayHistoryOfUser_Server);
+	answer += msgCode;
+	answer += request[1];
+	answer.append(username);
+	for(int i = 0; i < user.size()-1; i++)
+	{
+		if(username == user[i][0])
+		{
+			userTweetID = i; 
+			break; 
+		}
+	}
+	//Safe Posts
+	int endOfLoop = tweets[userTweetID].size() - 10;
+	if (endOfLoop <= 0)
+	{
+		endOfLoop = 0;
+	}
+	for (int i = tweets[userTweetID].size() - 1; i > endOfLoop; i--)
+	{
+		int lenghtOfPost = tweets[userTweetID][i].length();
+		if (lenghtOfPost > 0)
+		{
+			char lenghtAscii = '0' + lenghtOfPost;
+			answer += lenghtAscii;
+			answer.append(tweets[userTweetID][i]);
+		}
+	}
+
+	return answer;
+}
+
+void DisplayUserHistory(SOCKET i, char request[])
+{
+	std::string msg = GetUserPosts(request);
+	std::cout << "Display User Tweets:\n" << msg << "\n";
+	char msgFormated[4096];
+	strcpy_s(msgFormated, msg.c_str());
+	send(i, msgFormated, sizeof(msgFormated), 0); 
+}
+void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[]) {
+
 	readingRequest = true;
 	bool failed = false;
 	int passwortStart;
@@ -72,7 +134,7 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::
 	switch (request[0]) {
 	case 1:
 		printf("Handle Username: ");
-		failed = CheckForUserName(index, user, request, userIndex);
+		failed = CheckForUserName(request);
 		if (!failed) {
 			anwser = char(CheckUsernameForExistance_Server);
 			anwser.append(std::to_string(2));
@@ -96,7 +158,7 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::
 		passwortLenght = request[passwortStart - 1] - '0';
 		password = GetPassword(request, passwortStart, passwortLenght);
 		anwser = ""; 
-		if((*user)[*userIndex][1] == password)
+		if(user[userIndex][1] == password)
 		{
 			std::cout << "Correct passwort!" << "\n"; 
 			anwser = char(CheckPasswordForCorrectness_Server);
@@ -115,20 +177,25 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::
 		readingRequest = false;
 		break;
 	case 3:
-		printf("Handle User History: ");
-		send(i, "Searching for your Browser History...disgusting...", 4096, 0);
+		DisplayUserHistory(i, request); 
 		readingRequest = false;
 		break;
 	case 4:
-		(*tweets)[(*userIndex)][(*tweetCounter)] = ExtractTweet(request);
-		std::cout << (*tweets)[(*userIndex)][(*tweetCounter)] << std::endl; 
-		(*tweetCounter)++; 
-		anwser = "";
+		userTweetID = 0;
+		anwser = ExtractTweet(request);
+
+		if (userTweetID >= tweets.size()) {
+			tweets.resize(userTweetID + 1); // Vergrößere den Vektor, wenn nötig
+		}
+
+		tweets[userTweetID].push_back(anwser);
+		tweetCounter++;
+		anwser.clear();
 		anwser += char(PostAMessage_Server);
 		anwser += '1';
-		char formatedAnwser[4096];
-		strcpy_s(formatedAnwser, anwser.c_str());
-		send(i, formatedAnwser, 4096, 0);
+		char formattedAnswer[4096];
+		strcpy_s(formattedAnswer, anwser.c_str());
+		send(i, formattedAnswer, 4096, 0);
 		readingRequest = false;
 		break;
 	case 5:
@@ -136,15 +203,15 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::
 		passwortLenght = request[passwortStart - 1] - '0';
 		password = GetPassword(request, passwortStart, passwortLenght);
 		std::cout << "Password: " << password << std::endl;
-		(*user)[*index][1] = password;
+		user[index][1] = password;
 		anwser = "";
 		anwser += char(RegisterUser_Server);
 		anwser += '1';
 		char mformatedAnwser[4096];
 		strcpy_s(mformatedAnwser, anwser.c_str());
 		send(i, mformatedAnwser, 4096, 0);
-		(*index)++;
-		(*userIndex) = *index; 
+		index++;
+		userIndex = index; 
 		readingRequest = false;
 		break;
 	default:
@@ -154,32 +221,12 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[], std::
 	}
 }
 
-
 int main(int argc, char* argv[])
 {
 	//das hier später raus löschen und in klasse einbauen
 	// pointer werden verwendet, damit die variablen die ganze die selben sind, und nicht beim verlassen einer methode gelöscht werden
 	// --> Werte werden also erst gelöscht, wenn das Programm geschlossen wird. 
 
-	//speichern der nutzer 
-	std::vector<std::vector<std::string>> user(10, std::vector<std::string>(2));
-	std::vector<std::vector<std::string>>* pUser = &user;
-
-	//speichern der tweets + nutzernamen 
-	std::vector<std::vector<std::string>> tweets(10, std::vector<std::string>(10));
-	std::vector<std::vector<std::string>>* pTweets = &tweets;
-	
-	//counter der nutzer
-	int index = 0; 
-	int* pIndex = &index; 
-	
-	//id des nutzers der gerade angemeldet ist
-	int userIndex = 0; 
-	int* pUserIndex = &userIndex;
-	
-	//tweet counter
-	int tweetCounter = 0; 
-	int* pTweetCounter = &tweetCounter; 
 	//server set up
 	WSAData d;
 	bool readingRequest = false;
@@ -267,7 +314,7 @@ int main(int argc, char* argv[])
 						if(bytesReceived > 1)
 						{
 							readingRequest = true;
-							HandleIncomingRequest(readingRequest, i, request, pUser, pTweets,  pIndex, pUserIndex, pTweetCounter); 
+							HandleIncomingRequest(readingRequest, i, request); 
 						}
 					}
 					else 
