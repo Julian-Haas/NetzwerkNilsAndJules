@@ -24,6 +24,14 @@ int userIndex = 0;
 int userTweetID = 0; 
 //tweet counter
 int tweetCounter = 0;
+
+void SendToClient(SOCKET i, std::string msg)
+{
+	char formatedAnwser[4096];
+	strcpy_s(formatedAnwser, msg.c_str());
+	send(i, formatedAnwser, 4096, 0);
+}
+
 enum protocol
 {
 	CheckUsernameForExistance_Client = 1,
@@ -75,10 +83,9 @@ activeUser = std::string(request + 2, nameLength);
 
 std::string GetUserPosts(char request[])
 {
-	std::string answer;
 	int usernameLenght = request[1] - '0';
 	std::string username = std::string(request + 2, usernameLenght);
-
+	std::string answer; 
 	//speichern des Request Codes, der L‰nge des Nutzernamens + nutzernamen gem‰ﬂ protokoll
 	char msgCode = char(DisplayHistoryOfUser_Server);
 	answer += msgCode;
@@ -116,9 +123,7 @@ void DisplayUserHistory(SOCKET i, char request[])
 {
 	std::string msg = GetUserPosts(request);
 	std::cout << "Display User Tweets:\n" << msg << "\n";
-	char msgFormated[4096];
-	strcpy_s(msgFormated, msg.c_str());
-	send(i, msgFormated, sizeof(msgFormated), 0); 
+	SendToClient(i, msg); 
 }
 
 void CheckUserNameForExistance(SOCKET i, char request[])
@@ -129,18 +134,13 @@ void CheckUserNameForExistance(SOCKET i, char request[])
 	if (!failed) {
 		answer = char(CheckUsernameForExistance_Server);
 		answer.append(std::to_string(2));
-		char formatedAnwser[4096];
-		strcpy_s(formatedAnwser, answer.c_str());
-		std::cout << "name is valid!" << std::endl;
-		send(i, formatedAnwser, 4096, 0);
+		SendToClient(i, answer); 
 	}
 	else {
 		answer = char(CheckUsernameForExistance_Server);
 		answer.append(std::to_string(1));
 		std::cout << answer[1] << "\n";
-		char formatedAnwser[4096];
-		strcpy_s(formatedAnwser, answer.c_str());
-		send(i, formatedAnwser, 4096, 0);
+		SendToClient(i, answer);
 	}
 }
 
@@ -157,17 +157,13 @@ void CheckPasswordForCorrectness(SOCKET i, char request[])
 		std::cout << "Correct passwort!" << "\n";
 		answer = char(CheckPasswordForCorrectness_Server);
 		answer.append(std::to_string(1));
-		char formatedAnwser[4096];
-		strcpy_s(formatedAnwser, answer.c_str());
-		send(i, formatedAnwser, 4096, 0);
+		SendToClient(i, answer);
 	}
 	else
 	{
 		answer = char(CheckPasswordForCorrectness_Server);
 		answer.append(std::to_string(2));
-		char formatedAnwser[4096];
-		strcpy_s(formatedAnwser, answer.c_str());
-		send(i, formatedAnwser, 4096, 0);
+		SendToClient(i, answer);
 	}
 }
 
@@ -193,9 +189,7 @@ int PostUserMessage(SOCKET i, char request[])
 		answer += char(PostAMessage_Server);
 		char exitCode = '0' + 2; 
 		answer += exitCode;
-		char formattedAnswer[4096];
-		strcpy_s(formattedAnswer, answer.c_str());
-		send(i, formattedAnswer, 4096, 0);
+		SendToClient(i, answer);
 		return-1; 
 	}
 	answer = ExtractTweet(request);
@@ -208,28 +202,25 @@ int PostUserMessage(SOCKET i, char request[])
 	tweetCounter++;
 	answer.clear();
 	answer += char(PostAMessage_Server);
-	answer += '1';
-	char formattedAnswer[4096];
-	strcpy_s(formattedAnswer, answer.c_str());
-	send(i, formattedAnswer, 4096, 0);
+	char exitCode = '0' + 2;
+	answer += exitCode;
+	SendToClient(i, answer);
 	return 0; 
 }
 
 void FinishRegistration(SOCKET i, char request[])
 {
 	std::string password; 
-	std::string anwser; 
+	std::string answer; 
 	int passwortStart = request[1] + 3 - '0';
 	int passwortLenght = request[passwortStart - 1] - '0';
 	password = GetPassword(request, passwortStart, passwortLenght);
 	std::cout << "Password: " << password << std::endl;
 	user[index][1] = password;
-	anwser = "";
-	anwser += char(RegisterUser_Server);
-	anwser += '1';
-	char mformatedAnwser[4096];
-	strcpy_s(mformatedAnwser, anwser.c_str());
-	send(i, mformatedAnwser, 4096, 0);
+	answer = "";
+	answer += char(RegisterUser_Server);
+	answer += '1';
+	SendToClient(i, answer);
 	index++;
 	userIndex = index;
 }
