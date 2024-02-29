@@ -298,11 +298,11 @@ bool Messenger::WaitForServerResponse()
             switch (read[0])
             {
             case 101:
-                val = read[1] - '0';
+                val = read[1];
                 return (val == 1);
                 break;
             case 102:
-                val = read[1] - '0';
+                val = read[1];
                 return (val == 1);
                 break;
             case 103:
@@ -310,11 +310,11 @@ bool Messenger::WaitForServerResponse()
                 return true;
                 break;
             case 104:
-                val = read[1] - '0';
+                val = read[1];
                 return (val == 1);
                 break;
             case 105:
-                val = read[1] - '0';
+                val = read[1];
                 return (val == 1);
                 break;
             default:
@@ -351,7 +351,7 @@ void Messenger::MainMenu()
     std::string chosenOption = "";
     while (true)
     {
-        std::cout << "Please enter 1 to login or 2 to register\n";
+        std::cout << "Please enter 1 to login or 2 to register.\n";
         std::cin >> chosenOption;
         std::cin.ignore(10000, '\n');
         if (chosenOption == "1")
@@ -367,13 +367,23 @@ void Messenger::MainMenu()
 
 void Messenger::DisplayReceivedHistory(char container[])
 {
-    //int AmountOfMessages = int(container[1]);
-    //int LengthOfUsername = int(container[2]);
-    //std::string username(container + 3, container + LengthOfUsername + 3);
-
-    //int LengthOfMessage = int(container[LengthOfUsername + 4]) * 256 + int(container[LengthOfUsername + 4]);
-
-
+    int amountOfMessages = container[1];
+    int positionToRead = 2;
+    int lengthOfUsername = container[positionToRead];
+    positionToRead += 1;
+    std::string username = std::string(container[positionToRead], lengthOfUsername);
+    positionToRead += lengthOfUsername;
+    std::cout << "Here is the History of the User \n" << username << "\n";
+    for (int i = 0; i < amountOfMessages; i++)
+    {
+        //day(byte), month(byte), year(2bytes) 2 bytes, at,
+        //std::cout << "Message " << i+1 << " posted at: " << " " << "\n"; //Zeit
+        int lengthOfMessage = container[positionToRead * 256] + container[(positionToRead+1)];
+        positionToRead += 2;
+        std::string message = std::string(container[positionToRead], lengthOfMessage);       
+        positionToRead += lengthOfMessage;
+        std::cout << message << "\n";
+    }
 
 }
 
