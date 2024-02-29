@@ -21,6 +21,33 @@ enum Messenger::protocol
     RegisterUser_Server = 105
 };
 
+std::string Messenger::AddMessageLenght(std::string msg)
+{
+    int length = msg.length();
+    char val1;
+    char val2;
+    if (length > 255)
+    {
+        int rest = length - 255;
+        val1 = 255;
+        val2 = rest;
+        serverRequest += val1;
+        serverRequest += val2;
+    }
+    else
+    {
+        val1 = length;
+        val2 = 0;
+        serverRequest += val1;
+        serverRequest += val2;
+    }
+}
+
+int GetStringLenght(char request[], int start)
+{
+    return request[start] + request[start + 1];
+}
+
 void Messenger::SetRequestCode(int requestCode)
 {
     serverRequest = char(requestCode);
@@ -29,8 +56,9 @@ void Messenger::SetRequestCode(int requestCode)
 
 void Messenger::ExtendRequest(std::string appendedParameter)
 {
-    char lenght = '0' + appendedParameter.length(); 
-    serverRequest += lenght; 
+    //char lenght = '0' + appendedParameter.length();
+    AddMessageLenght(appendedParameter);
+    //serverRequest += lenght; 
     serverRequest.append(appendedParameter);
 }
 
@@ -369,8 +397,8 @@ void Messenger::DisplayReceivedHistory(char container[])
 {
     int amountOfMessages = container[1];
     int positionToRead = 2;
-    int lengthOfUsername = container[positionToRead];
-    positionToRead += 1;
+    int lengthOfUsername = GetStringLenght(container, positionToRead);
+    positionToRead += 2;
     std::string username = std::string(container[positionToRead], lengthOfUsername);
     positionToRead += lengthOfUsername;
     std::cout << "Here is the History of the User \n" << username << "\n";
@@ -378,13 +406,12 @@ void Messenger::DisplayReceivedHistory(char container[])
     {
         //day(byte), month(byte), year(2bytes) 2 bytes, at,
         //std::cout << "Message " << i+1 << " posted at: " << " " << "\n"; //Zeit
-        int lengthOfMessage = container[positionToRead * 256] + container[(positionToRead+1)];
+        int lengthOfMessage = GetStringLenght(container, positionToRead);
         positionToRead += 2;
         std::string message = std::string(container[positionToRead], lengthOfMessage);       
         positionToRead += lengthOfMessage;
         std::cout << message << "\n";
     }
-
 }
 
 //std::string usaaaname = "Nils";
