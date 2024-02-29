@@ -6,11 +6,11 @@
 class Messenger
 {
 private:
-	SOCKET serverSocket;
-	std::string serverRequest;
-	std::string nameOfActiveUser;
-	char formattedRequest[4096];
-		//int requestLength = 0;
+		SOCKET serverSocket;
+		std::string serverRequest;
+		std::string nameOfActiveUser;
+		char formattedRequest[4096];
+		char receivedMessage[4096];
 		enum protocol;
 		bool CheckUsernameForExistance(std::string Username);
 		bool CheckPasswordForCorrectness(std::string Username, std::string Password);
@@ -25,7 +25,7 @@ private:
 		void SendToServer();
 		void ExtendRequest(std::string appendedParameter);
 		void SetRequestCode(int requestCode);
-		void DisplayReceivedHistory(char container[]);
+		void DisplayReceivedHistory();
 		void PostAMessage(std::string message);
 		bool RegisterOnServer(std::string Username, std::string Password);
 		void AddMessageLenght(std::string msg);

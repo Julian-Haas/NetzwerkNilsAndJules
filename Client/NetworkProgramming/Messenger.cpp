@@ -112,12 +112,16 @@ void Messenger::ModePostAMessage()
         std::cout << "Please enter a message with maximum 280 characters which you want to post.\n";
         std::cin.ignore(10000, '\n');
         std::getline(std::cin, message);
+        ////char test = 0;
+        //char test = '\0';
         if (message.length() > 280)
         {
             std::cout << "Your message was too long.\n";
             continue;
         }
+        //message += test;
         PostAMessage(message);
+
         std::cout << "You posted this message: " << message << "\n";
         break;
     }
@@ -322,36 +326,49 @@ bool Messenger::WaitForServerResponse()
 
         if (FD_ISSET(serverSocket, &reads))
         {
-            char read[4096];
-            int bytesReceived = recv(serverSocket, read, sizeof(read), 0);
+
+            int bytesReceived = recv(serverSocket, receivedMessage, sizeof(receivedMessage), 0);
+            //std::cout << read << std:: endl;
+            //int i = -1;
+            //for (char c : read)
+            //{
+            //    std::cout << int(c); //<< std::endl;
+            //}
+            //while (true)
+            //{
+            //    i++;
+            //    //if (read[i] == 0) break;
+            //    std::cout << int(read[i]); //<< std::endl;
+
+            //}
             int val = 0; 
-            switch (read[0])
+            switch (receivedMessage[0])
             {
             case 101:
-                val = read[1];
+                val = receivedMessage[1];
                 return (val == 1);
                 break;
             case 102:
-                val = read[1];
+                val = receivedMessage[1];
                 return (val == 1);
                 break;
             case 103:
-                DisplayReceivedHistory(read);
+                DisplayReceivedHistory();
                 return true;
                 break;
             case 104:
-                val = read[1];
+                val = receivedMessage[1];
                 return (val == 1);
                 break;
             case 105:
-                val = read[1];
+                val = receivedMessage[1];
                 return (val == 1);
                 break;
             default:
                 break;
             }
-            printf("Received size: %d\n", sizeof(read));
-            printf("Received: %s", read);
+            printf("Received size: %d\n", sizeof(receivedMessage));
+            printf("Received: %s", receivedMessage);
             if (bytesReceived < 1)
             {
                 printf("Connection closed.\n");
@@ -406,23 +423,27 @@ void Messenger::MainMenu()
     }
 }
 
-void Messenger::DisplayReceivedHistory(char container[])
+void Messenger::DisplayReceivedHistory()
 {
-    //std::cout << container;
-    int amountOfMessages = container[1];
+    //for (int i = 0; i < 40; i++)
+    //{
+    //    std::cout << int(receivedMessage[i]) << std::endl;
+    //}
+    //std::cout << std::endl;
+    int amountOfMessages = receivedMessage[1];
     int positionToRead = 2;
-    int lengthOfUsername = GetStringLenght(container, positionToRead);
+    int lengthOfUsername = GetStringLenght(receivedMessage, positionToRead);
     positionToRead += 2;
-    std::string username = std::string(container[positionToRead], lengthOfUsername);
+    std::string username = std::string(receivedMessage + positionToRead, lengthOfUsername);
     positionToRead += lengthOfUsername;
     std::cout << "Here is the History of the User \n" << username << "\n";
     for (int i = 0; i < amountOfMessages; i++)
     {
         //day(byte), month(byte), year(2bytes) 2 bytes, at,
         //std::cout << "Message " << i+1 << " posted at: " << " " << "\n"; //Zeit
-        int lengthOfMessage = GetStringLenght(container, positionToRead);
+        int lengthOfMessage = GetStringLenght(receivedMessage, positionToRead);
         positionToRead += 2;
-        std::string message = std::string(container[positionToRead], lengthOfMessage);       
+        std::string message = std::string(receivedMessage+ positionToRead, lengthOfMessage);
         positionToRead += lengthOfMessage;
         std::cout << message << "\n";
     }
