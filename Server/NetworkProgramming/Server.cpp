@@ -29,7 +29,7 @@ void SendToClient(SOCKET i, std::string msg)
 {
 	char formatedAnwser[4096];
 	strcpy_s(formatedAnwser, msg.c_str());
-	send(i, formatedAnwser, 4096, 0);
+	send(i, formatedAnwser, sizeof(formatedAnwser), 0);
 }
 
 enum protocol
@@ -65,15 +65,21 @@ std::string ExtractTweet(char request[])
 	return tweet; 
 }
 
-bool CheckForUserName(char request[]) {
-	int nameLength = request[1] - '0';
+/*
+  CheckForUserName in GetUserPost als security check verwenden  
+*/
+bool CheckForUserName(char request[]) 
+{
+	int nameLength = request[1] - '0'; //-> ASCII in INT _> eig. falsche lösung 
 	std::cout << "Laenge des Names: " << nameLength << "\n";
-activeUser = std::string(request + 2, nameLength);
+	activeUser = std::string(request + 2, nameLength);
 	std::cout << "Username: " << activeUser << "\n";
-	for (int i = 0; i < index; i++) {
+	for (int i = 0; i < user.size(); i++)
+	{
 		userTweetID = i; 
-		if (activeUser == user[i][0]) {
-			userIndex = i; 
+		if (activeUser == user[i][0]) 
+		{
+			userIndex = i; //unnötig 
 			return true;
 		}
 	}
@@ -95,7 +101,7 @@ std::string GetUserPosts(char request[])
 	{
 		if(username == user[i][0])
 		{
-			userTweetID = i; 
+			userTweetID = i; //falsch -> tweet id kann auch eine andere nummer als die nutzer id  sein...
 			break; 
 		}
 	}
@@ -105,6 +111,8 @@ std::string GetUserPosts(char request[])
 	{
 		endOfLoop = 0;
 	}
+
+	//|103|TweetLänge|Tweet| TweetLänge | Tweet |
 	for (int i = tweets[userTweetID].size() - 1; i >= endOfLoop; i--)
 	{
 		int lenghtOfPost = tweets[userTweetID][i].length();
@@ -126,14 +134,17 @@ void DisplayUserHistory(SOCKET i, char request[])
 	SendToClient(i, msg); 
 }
 
+
 void CheckUserNameForExistance(SOCKET i, char request[])
 {
 	printf("Handle Username: ");
 	bool failed = CheckForUserName(request);
 	std::string answer; 
 	if (!failed) {
+
 		answer = char(CheckUsernameForExistance_Server);
-		answer.append(std::to_string(2));
+		answer.append(std::to_string(2)); // 2 = false;
+		std::cout << answer[1] << "\n";
 		SendToClient(i, answer); 
 	}
 	else {
@@ -146,6 +157,10 @@ void CheckUserNameForExistance(SOCKET i, char request[])
 
 void CheckPasswordForCorrectness(SOCKET i, char request[])
 {
+
+	/*
+	|MSGCODE|LängeUsername|Username|Länge von der request|stuff|
+	*/
 	std::string password;
 	std::string answer; 
 	int passwortStart = request[1] + 3 - '0';
@@ -262,10 +277,6 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[]) {
 
 int main(int argc, char* argv[])
 {
-	//das hier später raus löschen und in klasse einbauen
-	// pointer werden verwendet, damit die variablen die ganze die selben sind, und nicht beim verlassen einer methode gelöscht werden
-	// --> Werte werden also erst gelöscht, wenn das Programm geschlossen wird. 
-
 	//server set up
 	WSAData d;
 	bool readingRequest = false;
