@@ -25,10 +25,37 @@ int userTweetID = 0;
 //tweet counter
 int tweetCounter = 0;
 
+std::string AddMessageLenght(std::string msg, int length)
+{
+	char val1;
+	char val2;
+	if (length > 255)
+	{
+		int rest = length - 255;
+		val1 = 255;
+		val2 = rest;
+		msg += val1;
+		msg += val2;
+	}
+	else
+	{
+		val1 = length;
+		val2 = 0;
+		msg += val1;
+		msg += val2;
+	}
+	return msg;
+}
+
+int GetStringLenght(char request[], int start)
+{
+	return request[start] + request[start + 1];
+}
 void SendToClient(SOCKET i, std::string msg)
 {
 	char formatedAnwser[4096];
 	strcpy_s(formatedAnwser, msg.c_str());
+	std::cout << formatedAnwser << "\n"; 
 	send(i, formatedAnwser, sizeof(formatedAnwser), 0);
 }
 
@@ -59,9 +86,8 @@ std::string GetPassword(char request[], int start, int lenght)
 std::string ExtractTweet(char request[])
 {
 
-	int msgLenght = request[1] - '0';
-	std::cout << request[1] <<"\n";
-	std::string tweet = std::string(request + 2, msgLenght);
+	int msgLenght = GetStringLenght(request, 1); 
+	std::string tweet = std::string(request + 3, msgLenght);
 	return tweet; 
 }
 
@@ -70,16 +96,16 @@ std::string ExtractTweet(char request[])
 */
 bool CheckForUserName(char request[]) 
 {
-	int nameLength = request[1] - '0'; //-> ASCII in INT _> eig. falsche lösung 
+	int nameLength = GetStringLenght(request, 1);
 	std::cout << "Laenge des Names: " << nameLength << "\n";
-	activeUser = std::string(request + 2, nameLength);
+	activeUser = std::string(request + 3, nameLength);
 	std::cout << "Username: " << activeUser << "\n";
 	for (int i = 0; i < user.size(); i++)
 	{
 		userTweetID = i; 
 		if (activeUser == user[i][0]) 
 		{
-			userIndex = i; //unnötig 
+			userIndex = i;
 			return true;
 		}
 	}
@@ -89,14 +115,13 @@ bool CheckForUserName(char request[])
 
 std::string GetUserPosts(char request[])
 {
-	int usernameLenght = request[1] - '0';
-	std::string username = std::string(request + 2, usernameLenght);
+	int usernameLenght =GetStringLenght(request, 1);
+	std::string username = std::string(request + 3, usernameLenght);
 	std::string answer; 
 	//speichern des Request Codes, der Länge des Nutzernamens + nutzernamen gemäß protokoll
-	char msgCode = char(DisplayHistoryOfUser_Server);
+	char msgCode = DisplayHistoryOfUser_Server;
 	answer += msgCode;
-	answer += request[1];
-	answer.append(username);
+
 	for(int i = 0; i <= user.size()-1; i++)
 	{
 		if(username == user[i][0])
@@ -107,19 +132,26 @@ std::string GetUserPosts(char request[])
 	}
 	//Safe Posts
 	int endOfLoop = tweets[userTweetID].size() - 10;
+	int postAmount; 
 	if (endOfLoop <= 0)
 	{
 		endOfLoop = 0;
+		postAmount = tweets[userTweetID].size(); 
+	} else 
+	{
+		postAmount = 10; 
 	}
-
+	char postAmountChar = postAmount; 
+	answer += postAmountChar; 
+	answer = AddMessageLenght(answer, usernameLenght);
+	answer.append(username);
 	//|103|TweetLänge|Tweet| TweetLänge | Tweet |
 	for (int i = tweets[userTweetID].size() - 1; i >= endOfLoop; i--)
 	{
 		int lenghtOfPost = tweets[userTweetID][i].length();
 		if (lenghtOfPost > 0)
 		{
-			char lenghtAscii = '0' + lenghtOfPost;
-			answer += lenghtAscii;
+			answer += AddMessageLenght(answer, lenghtOfPost);
 			answer.append(tweets[userTweetID][i]);
 		}
 	}
@@ -142,15 +174,17 @@ void CheckUserNameForExistance(SOCKET i, char request[])
 	std::string answer; 
 	if (!failed) {
 
-		answer = char(CheckUsernameForExistance_Server);
-		answer.append(std::to_string(2)); // 2 = false;
+		answer = CheckUsernameForExistance_Server;
+		char exitCode = 2; 
+		answer += exitCode; 
 		std::cout << answer[1] << "\n";
 		SendToClient(i, answer); 
 	}
 	else {
-		answer = char(CheckUsernameForExistance_Server);
-		answer.append(std::to_string(1));
-		std::cout << answer[1] << "\n";
+		answer = CheckUsernameForExistance_Server;
+		char exitCode = 1;
+		answer += exitCode;
+		//std::cout << answer[1] << "\n";
 		SendToClient(i, answer);
 	}
 }
@@ -163,21 +197,23 @@ void CheckPasswordForCorrectness(SOCKET i, char request[])
 	*/
 	std::string password;
 	std::string answer; 
-	int passwortStart = request[1] + 3 - '0';
-	int passwortLenght = request[passwortStart - 1] - '0';
+	int passwortStart = GetStringLenght(request, 1) + 5;
+	int passwortLenght = GetStringLenght(request, passwortStart-1);
 	password = GetPassword(request, passwortStart, passwortLenght);
 	answer = "";
 	if (user[userIndex][1] == password)
 	{
+		answer = CheckPasswordForCorrectness_Server;
 		std::cout << "Correct passwort!" << "\n";
-		answer = char(CheckPasswordForCorrectness_Server);
-		answer.append(std::to_string(1));
+		char returnCode = 1;
+		answer += returnCode;
 		SendToClient(i, answer);
 	}
 	else
 	{
-		answer = char(CheckPasswordForCorrectness_Server);
-		answer.append(std::to_string(2));
+		answer = CheckPasswordForCorrectness_Server;
+		char returnCode = 2; 
+		answer += returnCode; 
 		SendToClient(i, answer);
 	}
 }
@@ -201,8 +237,8 @@ int PostUserMessage(SOCKET i, char request[])
 	if(userTweetID == -1)
 	{
 		answer.clear();
-		answer += char(PostAMessage_Server);
-		char exitCode = '0' + 2; 
+		answer += PostAMessage_Server;
+		char exitCode = 2; 
 		answer += exitCode;
 		SendToClient(i, answer);
 		return-1; 
@@ -216,8 +252,8 @@ int PostUserMessage(SOCKET i, char request[])
 	tweets[userTweetID].push_back(answer);
 	tweetCounter++;
 	answer.clear();
-	answer += char(PostAMessage_Server);
-	char exitCode = '0' + 2;
+	answer += PostAMessage_Server;
+	char exitCode = 2;
 	answer += exitCode;
 	SendToClient(i, answer);
 	return 0; 
@@ -233,8 +269,8 @@ void FinishRegistration(SOCKET i, char request[])
 	std::cout << "Password: " << password << std::endl;
 	user[index][1] = password;
 	answer = "";
-	answer += char(RegisterUser_Server);
-	answer += '1';
+	answer += RegisterUser_Server;
+	answer += 1;
 	SendToClient(i, answer);
 	index++;
 	userIndex = index;
@@ -242,7 +278,7 @@ void FinishRegistration(SOCKET i, char request[])
 void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[]) {
 
 	int postWasSuccesFull;
-
+	std::cout << request << "\n"; 
 	switch (request[0]) {
 	case 1:
 		CheckUserNameForExistance(i, request); 
@@ -275,8 +311,25 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[]) {
 	}
 }
 
+
 int main(int argc, char* argv[])
 {
+	unsigned char testArr[4096];
+	unsigned char code = CheckPasswordForCorrectness_Server;
+	std::string test;
+	std::string msg;
+	test.append("Ganz viele buchstaben, damit der chit hier ordentlich getestet werden kann. \n Deswegen schreibe ích hier ganz viel Bullshit rein.\n Ganz viele buchstaben, damit der chit hier ordentlich getestet werden kann. \n Deswegen schreibe ích hier ganz viel Bullshit rein.");
+	int length = test.length();
+	
+	msg += code;
+	memcpy(testArr, msg.data(), msg.size());
+	int lengthOfMessage; 
+	lengthOfMessage = testArr[1] + testArr[2]; 
+
+
+	std::cout << int(testArr[0]) << "\n" << int(testArr[1]) << "\n" << int(testArr[2]) << "\n";
+	std::cout << "real lenght: \n" << length << "\n" << "Calculated lenght: \n" << lengthOfMessage << "\n";
+
 	//server set up
 	WSAData d;
 	bool readingRequest = false;
