@@ -27,8 +27,8 @@ int tweetCounter = 0;
 
 std::string AddMessageLenght(std::string msg, int length)
 {
-	unsigned char val1;
-	unsigned char val2;
+	char val1;
+	char val2;
 	if (length > 255)
 	{
 		int rest = length - 255;
@@ -49,13 +49,22 @@ std::string AddMessageLenght(std::string msg, int length)
 
 int GetStringLenght(char request[], int start)
 {
-	return static_cast<unsigned int>(request[start]) + static_cast<unsigned int>(request[start + 1]);
+	return static_cast<int>(request[start]) + static_cast<int>(request[start + 1]);
 }
 void SendToClient(SOCKET i, std::string msg)
 {
 	char formatedAnwser[4096];
-	strcpy_s(formatedAnwser, msg.c_str());
-	std::cout << formatedAnwser << "\n"; 
+	memcpy(formatedAnwser, msg.data(), msg.size());
+
+	if (formatedAnwser[0] == 103)
+	{
+		for (char c : formatedAnwser)
+		{
+			std::cout << int(c) << std::endl;
+
+		}
+	}
+
 	send(i, formatedAnwser, sizeof(formatedAnwser), 0);
 }
 
@@ -88,7 +97,7 @@ std::string ExtractTweet(char request[])
 
 	int NameLenght = GetStringLenght(request, 1); 
     //1 + 2(NameLenght) + namelenght + 2(tweetLenght)  
-	int tweetLenghtPos = NameLenght + 4;
+	int tweetLenghtPos = NameLenght + 3;
 	int tweetLenght = GetStringLenght(request, tweetLenghtPos);
 	std::string tweet = std::string(request + NameLenght + 5, tweetLenght);
 	return tweet; 
@@ -151,21 +160,23 @@ std::string GetUserPosts(char request[])
 	//|103|TweetLänge|Tweet| TweetLänge | Tweet |
 	for (int i = tweets[userTweetID].size() - 1; i >= endOfLoop; i--)
 	{
-		int lenghtOfPost = tweets[userTweetID][i].length();
+		std::string temp = tweets[userTweetID][i];
+		std::cout << temp << "\n";
+
+		int lenghtOfPost = (tweets[userTweetID][i].length());
+		//std::cout << lenghtOfPost << "\n";
 		if (lenghtOfPost > 0)
 		{
-			answer += AddMessageLenght(answer, lenghtOfPost);
+			answer = AddMessageLenght(answer, lenghtOfPost);
 			answer.append(tweets[userTweetID][i]);
 		}
 	}
-
 	return answer;
 }
 
 void DisplayUserHistory(SOCKET i, char request[])
 {
 	std::string msg = GetUserPosts(request);
-	std::cout << "Display User Tweets:\n" << msg << "\n";
 	SendToClient(i, msg); 
 }
 
@@ -281,7 +292,6 @@ void FinishRegistration(SOCKET i, char request[])
 void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[]) {
 
 	int postWasSuccesFull;
-	std::cout << request << "\n"; 
 	switch (request[0]) {
 	case 1:
 		CheckUserNameForExistance(i, request); 
