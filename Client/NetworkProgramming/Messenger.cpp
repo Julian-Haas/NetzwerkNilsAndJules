@@ -21,9 +21,10 @@ enum Messenger::protocol
     RegisterUser_Server = 105
 };
 
-std::string Messenger::AddMessageLenght(std::string msg)
+void Messenger::AddMessageLenght(std::string msg)
 {
     int length = msg.length();
+
     char val1;
     char val2;
     if (length > 255)
@@ -56,9 +57,7 @@ void Messenger::SetRequestCode(int requestCode)
 
 void Messenger::ExtendRequest(std::string appendedParameter)
 {
-    //char lenght = '0' + appendedParameter.length();
     AddMessageLenght(appendedParameter);
-    //serverRequest += lenght; 
     serverRequest.append(appendedParameter);
 }
 
@@ -99,6 +98,7 @@ void Messenger::DisplayHistoryOfUser(std::string username)
 void Messenger::PostAMessage(std::string message)
 {
     SetRequestCode(PostAMessage_Client);
+    ExtendRequest(nameOfActiveUser);
     ExtendRequest(message);
     SendToServer();
     WaitForServerResponse();
@@ -206,6 +206,7 @@ void Messenger::Login()
         if (CheckPasswordForCorrectness(enteredUsername, enteredPassword))
         {
             std::cout << "You logged in succesfully.\n";
+            nameOfActiveUser = enteredUsername;
             ModeAccountPage(enteredUsername);
             break;
         }
@@ -243,6 +244,7 @@ void Messenger::Register()
         if (RegisterOnServer(enteredUsername, enteredPassword))
         {
             std::cout << "You registered succesfully.\n";
+            nameOfActiveUser = enteredUsername;
             ModeAccountPage(enteredUsername);
             break;
         }
@@ -361,7 +363,18 @@ bool Messenger::WaitForServerResponse()
 
 void Messenger::SendToServer()
 {
-    strcpy_s(formattedRequest, serverRequest.c_str());
+
+    //strcpy_s(formattedRequest, serverRequest.c_str());
+    memcpy(formattedRequest, serverRequest.data(), serverRequest.size());
+    //if (formattedRequest[0] == 4)
+    //{
+    //    for (char c : formattedRequest)
+    //    {
+    //        std::cout << int(c) << std::endl;
+
+    //    }
+    //}
+
     send(serverSocket, formattedRequest, sizeof(formattedRequest), 0);
 }
 
@@ -395,6 +408,7 @@ void Messenger::MainMenu()
 
 void Messenger::DisplayReceivedHistory(char container[])
 {
+    //std::cout << container;
     int amountOfMessages = container[1];
     int positionToRead = 2;
     int lengthOfUsername = GetStringLenght(container, positionToRead);

@@ -8,6 +8,7 @@ class Messenger
 private:
 	SOCKET serverSocket;
 	std::string serverRequest;
+	std::string nameOfActiveUser;
 	char formattedRequest[4096];
 		//int requestLength = 0;
 		enum protocol;
@@ -27,7 +28,7 @@ private:
 		void DisplayReceivedHistory(char container[]);
 		void PostAMessage(std::string message);
 		bool RegisterOnServer(std::string Username, std::string Password);
-		std::string AddMessageLenght(std::string msg);
+		void AddMessageLenght(std::string msg);
 	public:
 		void StartMessenger(int argc, char* argv[]);
 };
