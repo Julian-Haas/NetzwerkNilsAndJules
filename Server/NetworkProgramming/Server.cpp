@@ -27,8 +27,8 @@ int tweetCounter = 0;
 
 std::string AddMessageLenght(std::string msg, int length)
 {
-	char val1;
-	char val2;
+	unsigned char val1;
+	unsigned char val2;
 	if (length > 255)
 	{
 		int rest = length - 255;
@@ -49,7 +49,7 @@ std::string AddMessageLenght(std::string msg, int length)
 
 int GetStringLenght(char request[], int start)
 {
-	return request[start] + request[start + 1];
+	return static_cast<unsigned int>(request[start]) + static_cast<unsigned int>(request[start + 1]);
 }
 void SendToClient(SOCKET i, std::string msg)
 {
@@ -86,15 +86,18 @@ std::string GetPassword(char request[], int start, int lenght)
 std::string ExtractTweet(char request[])
 {
 
-	int msgLenght = GetStringLenght(request, 1); 
-	std::string tweet = std::string(request + 3, msgLenght);
+	int NameLenght = GetStringLenght(request, 1); 
+    //1 + 2(NameLenght) + namelenght + 2(tweetLenght)  
+	int tweetLenghtPos = NameLenght + 4;
+	int tweetLenght = GetStringLenght(request, tweetLenghtPos);
+	std::string tweet = std::string(request + NameLenght + 5, tweetLenght);
 	return tweet; 
 }
 
 /*
   CheckForUserName in GetUserPost als security check verwenden  
 */
-bool CheckForUserName(char request[]) 
+bool CheckForUserName(char request[])
 {
 	int nameLength = GetStringLenght(request, 1);
 	std::cout << "Laenge des Names: " << nameLength << "\n";
@@ -115,7 +118,7 @@ bool CheckForUserName(char request[])
 
 std::string GetUserPosts(char request[])
 {
-	int usernameLenght =GetStringLenght(request, 1);
+	int usernameLenght = GetStringLenght(request, 1);
 	std::string username = std::string(request + 3, usernameLenght);
 	std::string answer; 
 	//speichern des Request Codes, der Länge des Nutzernamens + nutzernamen gemäß protokoll
@@ -314,8 +317,8 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[]) {
 
 int main(int argc, char* argv[])
 {
-	unsigned char testArr[4096];
-	unsigned char code = CheckPasswordForCorrectness_Server;
+	char testArr[4096];
+	char code = CheckPasswordForCorrectness_Server;
 	std::string test;
 	std::string msg;
 	test.append("Ganz viele buchstaben, damit der chit hier ordentlich getestet werden kann. \n Deswegen schreibe ích hier ganz viel Bullshit rein.\n Ganz viele buchstaben, damit der chit hier ordentlich getestet werden kann. \n Deswegen schreibe ích hier ganz viel Bullshit rein.");
