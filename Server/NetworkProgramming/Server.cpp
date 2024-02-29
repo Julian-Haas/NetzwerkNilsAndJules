@@ -29,6 +29,7 @@ void SendToClient(SOCKET i, std::string msg)
 {
 	char formatedAnwser[4096];
 	strcpy_s(formatedAnwser, msg.c_str());
+	std::cout << formatedAnwser << "\n"; 
 	send(i, formatedAnwser, sizeof(formatedAnwser), 0);
 }
 
@@ -93,7 +94,7 @@ std::string GetUserPosts(char request[])
 	std::string username = std::string(request + 2, usernameLenght);
 	std::string answer; 
 	//speichern des Request Codes, der Länge des Nutzernamens + nutzernamen gemäß protokoll
-	char msgCode = char(DisplayHistoryOfUser_Server);
+	char msgCode = DisplayHistoryOfUser_Server;
 	answer += msgCode;
 	answer += request[1];
 	answer.append(username);
@@ -142,15 +143,17 @@ void CheckUserNameForExistance(SOCKET i, char request[])
 	std::string answer; 
 	if (!failed) {
 
-		answer = char(CheckUsernameForExistance_Server);
-		answer.append(std::to_string(2)); // 2 = false;
+		answer = CheckUsernameForExistance_Server;
+		char exitCode = 2; 
+		answer += exitCode; 
 		std::cout << answer[1] << "\n";
 		SendToClient(i, answer); 
 	}
 	else {
-		answer = char(CheckUsernameForExistance_Server);
-		answer.append(std::to_string(1));
-		std::cout << answer[1] << "\n";
+		answer = CheckUsernameForExistance_Server;
+		char exitCode = 1;
+		answer += exitCode;
+		//std::cout << answer[1] << "\n";
 		SendToClient(i, answer);
 	}
 }
@@ -169,15 +172,17 @@ void CheckPasswordForCorrectness(SOCKET i, char request[])
 	answer = "";
 	if (user[userIndex][1] == password)
 	{
+		answer = CheckPasswordForCorrectness_Server;
 		std::cout << "Correct passwort!" << "\n";
-		answer = char(CheckPasswordForCorrectness_Server);
-		answer.append(std::to_string(1));
+		char returnCode = 1;
+		answer += returnCode;
 		SendToClient(i, answer);
 	}
 	else
 	{
-		answer = char(CheckPasswordForCorrectness_Server);
-		answer.append(std::to_string(2));
+		answer = CheckPasswordForCorrectness_Server;
+		char returnCode = 2; 
+		answer += returnCode; 
 		SendToClient(i, answer);
 	}
 }
@@ -201,8 +206,8 @@ int PostUserMessage(SOCKET i, char request[])
 	if(userTweetID == -1)
 	{
 		answer.clear();
-		answer += char(PostAMessage_Server);
-		char exitCode = '0' + 2; 
+		answer += PostAMessage_Server;
+		char exitCode = 2; 
 		answer += exitCode;
 		SendToClient(i, answer);
 		return-1; 
@@ -216,8 +221,8 @@ int PostUserMessage(SOCKET i, char request[])
 	tweets[userTweetID].push_back(answer);
 	tweetCounter++;
 	answer.clear();
-	answer += char(PostAMessage_Server);
-	char exitCode = '0' + 2;
+	answer += PostAMessage_Server;
+	char exitCode = 2;
 	answer += exitCode;
 	SendToClient(i, answer);
 	return 0; 
@@ -233,8 +238,8 @@ void FinishRegistration(SOCKET i, char request[])
 	std::cout << "Password: " << password << std::endl;
 	user[index][1] = password;
 	answer = "";
-	answer += char(RegisterUser_Server);
-	answer += '1';
+	answer += RegisterUser_Server;
+	answer += 1;
 	SendToClient(i, answer);
 	index++;
 	userIndex = index;
@@ -242,7 +247,7 @@ void FinishRegistration(SOCKET i, char request[])
 void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[]) {
 
 	int postWasSuccesFull;
-
+	std::cout << request << "\n"; 
 	switch (request[0]) {
 	case 1:
 		CheckUserNameForExistance(i, request); 
@@ -277,6 +282,22 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i, char request[]) {
 
 int main(int argc, char* argv[])
 {
+	char cppistnice[4096]; 
+	cppistnice[0] = 'x';
+	cppistnice[1] = 'y';
+	cppistnice[2] = 'z';
+
+	int x = 355; 
+	char y = x; 
+	cppistnice[1] = y; 
+	int z = y; 
+	
+	int a = cppistnice[0]; 
+	int b = cppistnice[1]; 
+	int c = cppistnice[2]; 
+	int e = a + b + c; 
+
+	std::cout << e << "\n"; 
 	//server set up
 	WSAData d;
 	bool readingRequest = false;
