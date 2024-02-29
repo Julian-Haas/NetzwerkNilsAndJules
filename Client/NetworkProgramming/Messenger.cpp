@@ -51,11 +51,21 @@ bool Messenger::CheckPasswordForCorrectness(std::string Username, std::string Pa
     return(WaitForServerResponse());
 }
 
+bool Messenger::RegisterOnServer(std::string Username, std::string Password)
+{
+    SetRequestCode(RegisterUser_Client);
+    ExtendRequest(Username);
+    ExtendRequest(Password);
+    SendToServer();
+    return(WaitForServerResponse());
+}
+
 void Messenger::DisplayHistoryOfUser(std::string username)
 {
     SetRequestCode(DisplayHistoryOfUser_Client);
     ExtendRequest(username);
     SendToServer();
+    WaitForServerResponse();
 }
 
 void Messenger::PostAMessage(std::string message)
@@ -63,6 +73,7 @@ void Messenger::PostAMessage(std::string message)
     SetRequestCode(PostAMessage_Client);
     ExtendRequest(message);
     SendToServer();
+    WaitForServerResponse();
 }
 
 void Messenger::ModePostAMessage()
@@ -89,7 +100,11 @@ void Messenger::ModeUserSearch()
     std::string username;
     std::cout << "Please enter a username whose history you want to see.\n";
     std::cin >> username;
-    if (CheckUsernameForExistance(username))
+    std::cout << "You want to see the History of: \n" << username << "\n";
+    CheckUsernameForExistance(username);
+    bool doesUserExist = CheckUsernameForExistance(username);
+    std::cout << "The Request to the server gave back: \n" << doesUserExist << "\n";
+    if (doesUserExist)
     {
         DisplayHistoryOfUser(username);
     }
@@ -150,12 +165,9 @@ void Messenger::Login()
         {
             std::cout << "Please enter your username.\n";
             std::getline(std::cin, enteredUsername);
-            SetRequestCode(CheckUsernameForExistance_Client);
-            ExtendRequest(enteredUsername);
-            SendToServer();
-            if (!WaitForServerResponse())
+            if (!CheckUsernameForExistance(enteredUsername))
             {
-                std::cout << "This Username is already in use.\n";
+                std::cout << "This Username does not exist.\n";
                 continue;
             }
             break;
@@ -163,9 +175,7 @@ void Messenger::Login()
         std::cout << "Your username is " << enteredUsername << ".\n";
         std::cout << "Please enter your password.\n";
         std::getline(std::cin, enteredPassword);
-        SetRequestCode(CheckPasswordForCorrectness_Client);
-        CheckPasswordForCorrectness(enteredUsername, enteredPassword);
-        if (WaitForServerResponse())
+        if (CheckPasswordForCorrectness(enteredUsername, enteredPassword))
         {
             std::cout << "You logged in succesfully.\n";
             ModeAccountPage(enteredUsername);
@@ -202,13 +212,7 @@ void Messenger::Register()
         std::cout << "Your chosen username is " << enteredUsername << ".\n";
         std::cout << "Please enter a password.\n";
         std::getline(std::cin, enteredPassword);
-        SetRequestCode(RegisterUser_Client);
-        //std::cout << RegisterUser_Client << "\n";
-        ExtendRequest(enteredUsername);
-        ExtendRequest(enteredPassword);
-        SendToServer();
-        bool RegisterSuccessful = false;
-        if (WaitForServerResponse())
+        if (RegisterOnServer(enteredUsername, enteredPassword))
         {
             std::cout << "You registered succesfully.\n";
             ModeAccountPage(enteredUsername);

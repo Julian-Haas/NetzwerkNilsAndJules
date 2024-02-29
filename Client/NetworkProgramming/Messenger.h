@@ -26,6 +26,7 @@ private:
 		void SetRequestCode(int requestCode);
 		void DisplayReceivedHistory(char container[]);
 		void PostAMessage(std::string message);
+		bool RegisterOnServer(std::string Username, std::string Password);
 	public:
 		void StartMessenger(int argc, char* argv[]);
 };
