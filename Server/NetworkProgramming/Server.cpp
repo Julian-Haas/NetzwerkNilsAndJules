@@ -28,13 +28,16 @@ char request[4096];
 
 std::string AddMessageLenght(std::string msg, int length)
 {
-	char val1;
-	char val2;
+	unsigned char val1;
+	unsigned char val2;
+
+	//280 + 30 = 310; 
+	//310 / 2 = 155; 
 	if (length > 255)
 	{
 		int rest = length - 255;
-		val1 = 255;
-		val2 = rest;
+		val1 = char(255);
+		val2 = char(rest);
 		msg += val1;
 		msg += val2;
 	}
@@ -339,22 +342,6 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i) {
 
 int main(int argc, char* argv[])
 {
-	char testArr[4096];
-	char code = CheckPasswordForCorrectness_Server;
-	std::string test;
-	std::string msg;
-	test.append("Ganz viele buchstaben, damit der chit hier ordentlich getestet werden kann. \n Deswegen schreibe ích hier ganz viel Bullshit rein.\n Ganz viele buchstaben, damit der chit hier ordentlich getestet werden kann. \n Deswegen schreibe ích hier ganz viel Bullshit rein.");
-	int length = test.length();
-	
-	msg += code;
-	memcpy(testArr, msg.data(), msg.size());
-	int lengthOfMessage; 
-	lengthOfMessage = testArr[1] + testArr[2]; 
-
-
-	std::cout << int(testArr[0]) << "\n" << int(testArr[1]) << "\n" << int(testArr[2]) << "\n";
-	std::cout << "real lenght: \n" << length << "\n" << "Calculated lenght: \n" << lengthOfMessage << "\n";
-
 	//server set up
 	WSAData d;
 	bool readingRequest = false;
