@@ -188,7 +188,6 @@ void Server::CheckUserNameForExistance(SOCKET i)
 	}
 	return;
 }
-
 void Server::CheckPasswordForCorrectness(SOCKET i)
 {
 	std::string password;
@@ -212,7 +211,6 @@ void Server::CheckPasswordForCorrectness(SOCKET i)
 		SendToClient(i, answer);
 	}
 }
-
 int Server::GetUserTweetID()
 {
 	std::string answer;
@@ -262,7 +260,6 @@ int Server::PostUserMessage(SOCKET i)
 	SendToClient(i, answer);
 	return 0;
 }
-
 void Server::FinishRegistration(SOCKET i)
 {
 	user[index][0] = activeUser;
@@ -319,10 +316,8 @@ void Server::HandleIncomingRequest(bool& readingRequest, SOCKET i) {
 	}
 }
 
-
 int Server::InitServer(int argc, char* argv[])
 {
-	//server set up
 	WSAData d;
 	bool readingRequest = false;
 	if (WSAStartup(MAKEWORD(2, 2), &d))
@@ -398,8 +393,7 @@ int Server::InitServer(int argc, char* argv[])
 					char adressBuffer[100];
 					getnameinfo(reinterpret_cast<sockaddr*>(&client), clientLegth, adressBuffer, sizeof(adressBuffer), 0, 0, NI_NUMERICHOST);
 					printf("New connection from: %s\n", adressBuffer);
-				}
-				else
+				}else
 				{
 					int bytesReceived = recv(i, request, sizeof(request), 0);
 					if (bytesReceived > 0) {
@@ -418,7 +412,6 @@ int Server::InitServer(int argc, char* argv[])
 					}
 				}
 			}
-
 		}
 	}
 	closesocket(listenerSocket);
