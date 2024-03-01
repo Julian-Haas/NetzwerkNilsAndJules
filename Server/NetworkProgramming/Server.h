@@ -41,6 +41,7 @@ class Server
 		enum protocol; 
 
 public:
+	Server(std::vector<std::vector<std::string>> nutzer); 
 	int InitServer(int argc, char* argv[]);
 
 };

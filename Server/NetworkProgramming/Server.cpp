@@ -10,6 +10,11 @@
 #include <iostream>
 #include "Server.h"
 
+Server::Server(std::vector<std::vector<std::string>> nutzer)
+	: user(nutzer)
+{
+	ZeroMemory(request, sizeof(request)); 
+}
 std::string Server::AddMessageLenght(std::string msg, int length)
 {
 	unsigned char val1;
@@ -284,8 +289,8 @@ void Server::FinishRegistration(SOCKET i)
 	}
 	user[index][1] = password;
 	answer = "";
-	answer += RegisterUser_Server;
-	answer += 1;
+	answer += char(RegisterUser_Server);
+	answer += char(1);
 	SendToClient(i, answer);
 	index++;
 	userIndex = index;
@@ -333,7 +338,6 @@ void Server::HandleIncomingRequest(bool& readingRequest, SOCKET i) {
 
 int Server::InitServer(int argc, char* argv[])
 {
-	user = std::vector<std::vector<std::string>>(10, std::vector<std::string>(2)); 
 	//server set up
 	WSAData d;
 	bool readingRequest = false;
@@ -413,6 +417,7 @@ int Server::InitServer(int argc, char* argv[])
 				}
 				else
 				{
+					ZeroMemory(request, sizeof(request));
 					int bytesReceived = recv(i, request, sizeof(request), 0);
 					if (bytesReceived > 0) {
 						HandleIncomingRequest(readingRequest, i);
