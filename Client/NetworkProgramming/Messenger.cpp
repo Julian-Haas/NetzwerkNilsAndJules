@@ -30,15 +30,15 @@ void Messenger::AddMessageLenght(std::string msg)
     if (length > 255)
     {
         int rest = length - 255;
-        val1 = 255;
-        val2 = rest;
+        val1 = char(255);
+        val2 = char(rest);
         serverRequest += val1;
         serverRequest += val2;
     }
     else
     {
-        val1 = length;
-        val2 = 0;
+        val1 = char(length);
+        val2 = char(0);
         serverRequest += val1;
         serverRequest += val2;
     }

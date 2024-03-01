@@ -8,7 +8,7 @@ class Messenger
 private:
 		SOCKET serverSocket;
 		std::string serverRequest;
-		std::string nameOfActiveUser=" ";
+		std::string nameOfActiveUser=".";
 		char formattedRequest[4096];
 		char receivedMessage[4096];
 		enum protocol;

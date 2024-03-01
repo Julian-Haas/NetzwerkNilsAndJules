@@ -12,16 +12,26 @@
 
 Server::Server(std::vector<std::vector<std::string>> nutzer)
 	: user(nutzer)
-{
-	ZeroMemory(request, sizeof(request)); 
+{ 
 }
+enum Server::protocol
+{
+	CheckUsernameForExistance_Client = 1,
+	CheckPasswordForCorrectness_Client = 2,
+	DisplayHistoryOfUser_Client = 3,
+	PostAMessage_Client = 4,
+	RegisterUser_Client = 5,
+	CheckUsernameForExistance_Server = 101,
+	CheckPasswordForCorrectness_Server = 102,
+	DisplayHistoryOfUser_Server = 103,
+	PostAMessage_Server = 104,
+	RegisterUser_Server = 105
+};
+
 std::string Server::AddMessageLenght(std::string msg, int length)
 {
 	unsigned char val1;
 	unsigned char val2;
-
-	//280 + 30 = 310; 
-	//310 / 2 = 155; 
 	if (length > 255)
 	{
 		int rest = length - 255;
@@ -50,7 +60,7 @@ void Server::SendToClient(SOCKET i, std::string msg)
 	memcpy(formatedAnswer, msg.data(), msg.size());
 	formatedAnswer[msg.size()] = '\0';
 
-	if (formatedAnswer[0] == 105)
+	if (formatedAnswer[0] == 103)
 	{
 		for (char c : formatedAnswer)
 		{
@@ -60,21 +70,6 @@ void Server::SendToClient(SOCKET i, std::string msg)
 
 	send(i, formatedAnswer, msg.size() + 1, 0); // Übergeben Sie die tatsächlich kopierte Datenlänge
 }
-
-
-enum Server::protocol
-{
-	CheckUsernameForExistance_Client = 1,
-	CheckPasswordForCorrectness_Client = 2,
-	DisplayHistoryOfUser_Client = 3,
-	PostAMessage_Client = 4,
-	RegisterUser_Client = 5,
-	CheckUsernameForExistance_Server = 101,
-	CheckPasswordForCorrectness_Server = 102,
-	DisplayHistoryOfUser_Server = 103,
-	PostAMessage_Server = 104,
-	RegisterUser_Server = 105
-};
 
 std::string Server::GetPassword(int start, int lenght)
 {
@@ -97,9 +92,6 @@ std::string Server::ExtractTweet()
 	return tweet;
 }
 
-/*
-  CheckForUserName in GetUserPost als security check verwenden
-*/
 bool Server::CheckForUserName()
 {
 	int nameLength = GetStringLenght(1);
@@ -115,9 +107,6 @@ bool Server::CheckForUserName()
 			userIndex = i;
 			return true;
 		}
-	}
-	if (index >= user.size()) {
-		user.resize(index + 4); // Vergrößere den Vektor, wenn nötig
 	}
 	user[index][0] = activeUser;
 	return false;
@@ -140,35 +129,43 @@ std::string Server::GetUserPosts()
 			break;
 		}
 	}
-	//Safe Posts
-	int endOfLoop = tweets[userTweetID].size() - 10;
-	int postAmount;
-	if (endOfLoop <= 0)
+	if(userTweetID < tweets.size())
 	{
-		endOfLoop = 0;
-		postAmount = tweets[userTweetID].size();
-	}
-	else
-	{
-		postAmount = 10;
-	}
-	char postAmountChar = postAmount;
-	answer += postAmountChar;
-	answer = AddMessageLenght(answer, usernameLenght);
-	answer.append(username);
-	//|103|TweetLänge|Tweet| TweetLänge | Tweet |
-	for (int i = tweets[userTweetID].size() - 1; i >= endOfLoop; i--)
-	{
-		std::string temp = tweets[userTweetID][i];
-		std::cout << temp << "\n";
-
-		int lenghtOfPost = (tweets[userTweetID][i].length());
-		//std::cout << lenghtOfPost << "\n";
-		if (lenghtOfPost > 0)
+		//Safe Posts
+		int endOfLoop = tweets[userTweetID].size() - 10;
+		int postAmount;
+		if (endOfLoop <= 0)
 		{
-			answer = AddMessageLenght(answer, lenghtOfPost);
-			answer.append(tweets[userTweetID][i]);
+			endOfLoop = 0;
+			postAmount = tweets[userTweetID].size();
 		}
+		else
+		{
+			postAmount = 10;
+		}
+		char postAmountChar = postAmount;
+		answer += postAmountChar;
+		answer = AddMessageLenght(answer, usernameLenght);
+		answer.append(username);
+		//|103|TweetLänge|Tweet| TweetLänge | Tweet |
+		for (int i = tweets[userTweetID].size() - 1; i >= endOfLoop; i--)
+		{
+			std::string temp = tweets[userTweetID][i];
+			std::cout << temp << "\n";
+
+			int lenghtOfPost = (tweets[userTweetID][i].length());
+			//std::cout << lenghtOfPost << "\n";
+			if (lenghtOfPost > 0)
+			{
+				answer = AddMessageLenght(answer, lenghtOfPost);
+				answer.append(tweets[userTweetID][i]);
+			}
+		}
+	} else 
+	{
+		answer += char(0); 
+		answer = AddMessageLenght(answer, usernameLenght);
+		answer.append(username);
 	}
 	return answer;
 }
@@ -280,17 +277,15 @@ void Server::FinishRegistration(SOCKET i)
 	std::string answer;
 	//int passwortStart = request[1] + 3 - '0';
 	//int passwortLenght = request[passwortStart - 1] - '0';
-	int passwortStart = GetStringLenght(1) + 5;
+	int passwortStart = GetStringLenght(1);
+	passwortStart += 5; 
 	int passwortLenght = GetStringLenght(passwortStart - 2);
 	password = GetPassword(passwortStart, passwortLenght);
 	std::cout << "Password: " << password << std::endl;
-	if (user[index].size() < 2) {
-		user[index].resize(2); // Größe des inneren Vektors anpassen, wenn nötig
-	}
 	user[index][1] = password;
 	answer = "";
-	answer += char(RegisterUser_Server);
-	answer += char(1);
+	answer += RegisterUser_Server;
+	answer += 1;
 	SendToClient(i, answer);
 	index++;
 	userIndex = index;
@@ -299,11 +294,8 @@ void Server::HandleIncomingRequest(bool& readingRequest, SOCKET i) {
 
 	int postWasSuccesFull;
 	std::string temp = request;
-	for (int x = 0; x < 30; x++)
-	{
-		std::cout << "Inhalt der Anfrage: \n" << int(request[x]) << "\n";
-	}
-
+	std::cout << int(request[0]) << "\n" << int(request[1]) << "\n";
+	std::cout << temp << "\n"; 
 	switch (request[0]) {
 	case 1:
 		CheckUserNameForExistance(i);
@@ -417,7 +409,6 @@ int Server::InitServer(int argc, char* argv[])
 				}
 				else
 				{
-					ZeroMemory(request, sizeof(request));
 					int bytesReceived = recv(i, request, sizeof(request), 0);
 					if (bytesReceived > 0) {
 						HandleIncomingRequest(readingRequest, i);
