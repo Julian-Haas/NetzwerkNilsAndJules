@@ -5,6 +5,8 @@
 #include <WinSock2.h>
 #include <iphlpapi.h>
 #include <WS2tcpip.h>
+#include <sstream>
+#include <iomanip>
 #include "Messenger.h"
 
 enum Messenger::protocol
@@ -46,6 +48,16 @@ void Messenger::AddMessageLenght(std::string msg)
 
 int GetStringLenght(char request[], int start)
 {
+    char blaa[5];
+    blaa[0] = request[start];
+    blaa[1] = request[start + 1];
+    blaa[2] = unsigned char(blaa[0]);
+    blaa[3] = unsigned char(blaa[1]);
+    blaa[4] = unsigned char(blaa[0]) + unsigned char(blaa[1]);
+    for (int i = 0; i < 5; i++)
+    {
+        std::cout << unsigned int(blaa[i]) << "\n";
+    }
     return request[start] + request[start + 1];
 }
 
@@ -437,15 +449,29 @@ void Messenger::DisplayReceivedHistory()
     std::string username = std::string(receivedMessage + positionToRead, lengthOfUsername);
     positionToRead += lengthOfUsername;
     std::cout << "Here is the History of the User \n" << username << "\n";
+
     for (int i = 0; i < amountOfMessages; i++)
     {
-        //day(byte), month(byte), year(2bytes) 2 bytes, at,
-        //std::cout << "Message " << i+1 << " posted at: " << " " << "\n"; //Zeit
+        std::cout << "Start of loop of loop. amountOfMessages: " << amountOfMessages << "    i: " << i << "    positionToRead: " << positionToRead << std::endl;
+        int timestamp = 0;
+        for (int j = 0; j < 4; j++)
+        {
+            timestamp += unsigned char(receivedMessage[positionToRead]) * std::pow(256, 3 - j);
+            positionToRead++;
+        }
+        std::time_t formattedTimestamp = static_cast<time_t>(timestamp);
+        std::tm timeinfo1;
+        localtime_s(&timeinfo1, &formattedTimestamp);
+        std::stringstream ss;
+        ss << std::put_time(&timeinfo1, "%d-%m-%Y %H:%M:%S");
+        std::string timeString = ss.str();
+        std::cout << "This Message was posted: " << timeString << std::endl;
         int lengthOfMessage = GetStringLenght(receivedMessage, positionToRead);
         positionToRead += 2;
         std::string message = std::string(receivedMessage+ positionToRead, lengthOfMessage);
         positionToRead += lengthOfMessage;
         std::cout << message << "\n";
+        std::cout << "End of loop. amountOfMessages: " << amountOfMessages << "i: " << i << "positionToRead: " << positionToRead << std::endl;
     }
 }
 

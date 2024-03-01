@@ -70,6 +70,17 @@ void Server::SendToClient(SOCKET i, std::string msg)
 		}
 			std::cout << "Successfully tranformed the time. Seconds since epoch as int: " << testausgabe << "\n";
 	}
+
+
+	//char test[4096];
+	//memcpy(test, &answer, answer.size());
+	std::cout << "hier gehts los" << "\n";
+	for (int i = 0; i < 50; i++)
+	{
+		std::cout << unsigned int(formatedAnswer[i]) << std::endl;
+	}
+
+
 	send(i, formatedAnswer, msg.size() + 1, 0); // Übergeben Sie die tatsächlich kopierte Datenlänge
 }
 
@@ -153,13 +164,18 @@ std::string Server::GetUserPosts()
 		for (int i = tweets[userTweetID].size() - 1; i >= endOfLoop; i--)
 		{
 			int time = postTimes[userTweetID][i]; 
-			std::cout << "1: seconds since epoch as int: " << time << "\n";
 			char bytes[4];
 			bytes[0] = (time >> 24) & 0xFF;
 			bytes[1] = (time >> 16) & 0xFF;
 			bytes[2] = (time >> 8) & 0xFF;
 			bytes[3] = time & 0xFF;
-			answer += bytes;
+			//std::string tempString = bytes;
+			//answer.append(tempString);
+			answer += bytes[0];
+			answer += bytes[1];
+			answer += bytes[2];
+			answer += bytes[3];
+			//answer += bytes;
 			//int timeSinceEpoch = 0;
 			//for (int i = 0; i < 4; i++)
 			//{
@@ -168,12 +184,13 @@ std::string Server::GetUserPosts()
 			//std::cout << "Successfully tranformed the time. Seconds since epoch as int: " << timeSinceEpoch << "\n";
 
 			std::string temp = tweets[userTweetID][i];
-			std::cout << temp << "\n";
+			//std::cout << temp << "\n";
 
 			int lenghtOfPost = (tweets[userTweetID][i].length());
 			//std::cout << lenghtOfPost << "\n";
 			if (lenghtOfPost > 0)
 			{
+				std::cout << "ich adde einen post." << "\n";
 				answer = AddMessageLenght(answer, lenghtOfPost);
 				answer.append(tweets[userTweetID][i]);
 			}
@@ -190,6 +207,7 @@ std::string Server::GetUserPosts()
 void Server::DisplayUserHistory(SOCKET i)
 {
 	std::string msg = GetUserPosts();
+
 	SendToClient(i, msg);
 }
 
