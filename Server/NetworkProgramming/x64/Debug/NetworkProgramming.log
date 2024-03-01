@@ -1,11 +1,10 @@
-﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (NetworkProgramming.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: Das Zwischenverzeichnis (x64\Debug\) enthält freigegebene Dateien aus einem anderen Projekt (NetworkProgramming.vcxproj). Dies kann zu einem falschen Bereinigungs- und Neuerstellungsverhalten führen.
   Server.cpp
-F:\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(69,56): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-F:\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(84,37): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-F:\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(148,17): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-F:\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(153,41): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-F:\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(164,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-F:\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(189,21): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-F:\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(404,60): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-F:\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(424,24): warning C4244: 'argument': conversion from 'SOCKET' to 'int', possible loss of data
-  NetworkProgramming.vcxproj -> F:\NetzwerkNilsAndJules\Server\x64\Debug\ServerSolution2.exe
+C:\Users\nilsh\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(63,37): warning C4267: "Argument": Konvertierung von "size_t" nach "int", Datenverlust möglich
+C:\Users\nilsh\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(126,16): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
+C:\Users\nilsh\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(131,40): warning C4267: "=": Konvertierung von "size_t" nach "int", Datenverlust möglich
+C:\Users\nilsh\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(141,13): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
+C:\Users\nilsh\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(154,20): warning C4267: "Initialisierung": Konvertierung von "size_t" nach "int", Datenverlust möglich
+C:\Users\nilsh\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(352,60): warning C4267: "Argument": Konvertierung von "size_t" nach "int", Datenverlust möglich
+C:\Users\nilsh\NetzwerkNilsAndJules\Server\NetworkProgramming\Server.cpp(372,24): warning C4244: "Argument": Konvertierung von "SOCKET" in "int", möglicher Datenverlust
+  NetworkProgramming.vcxproj -> C:\Users\nilsh\NetzwerkNilsAndJules\Server\x64\Debug\ServerSolution2.exe
