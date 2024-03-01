@@ -66,9 +66,9 @@ void Messenger::ExtendRequest(std::string appendedParameter)
 }
 
 bool Messenger::CheckUsernameForExistance(std::string Username)
+//Programm war eine Zeile zu kurz, darum musste hier noch eine rein.
 {
     SetRequestCode(CheckUsernameForExistance_Client);
-    //Programm war eine Zeile zu kurz, darum musste hier noch eine rein.
     ExtendRequest(Username);
     SendToServer();
     return(WaitForServerResponse());
