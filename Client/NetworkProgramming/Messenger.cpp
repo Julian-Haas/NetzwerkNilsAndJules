@@ -1,5 +1,6 @@
 #pragma comment (lib, "ws2_32.lib")
 #pragma comment (lib, "iphlpapi.lib")
+
 #include <cstdio>
 #include <conio.h>
 #include <WinSock2.h>
@@ -7,6 +8,7 @@
 #include <WS2tcpip.h>
 #include <sstream>
 #include <iomanip>
+
 #include "Messenger.h"
 
 enum Messenger::protocol
@@ -16,6 +18,7 @@ enum Messenger::protocol
     DisplayHistoryOfUser_Client = 3,
     PostAMessage_Client = 4,
     RegisterUser_Client = 5,
+
     CheckUsernameForExistance_Server = 101,
     CheckPasswordForCorrectness_Server = 102,
     DisplayHistoryOfUser_Server = 103,
@@ -48,23 +51,12 @@ void Messenger::AddMessageLenght(std::string msg)
 
 int GetStringLenght(char request[], int start)
 {
-    char blaa[5];
-    blaa[0] = request[start];
-    blaa[1] = request[start + 1];
-    blaa[2] = unsigned char(blaa[0]);
-    blaa[3] = unsigned char(blaa[1]);
-    blaa[4] = unsigned char(blaa[0]) + unsigned char(blaa[1]);
-    for (int i = 0; i < 5; i++)
-    {
-        std::cout << unsigned int(blaa[i]) << "\n";
-    }
     return request[start] + request[start + 1];
 }
 
 void Messenger::SetRequestCode(int requestCode)
 {
     serverRequest = char(requestCode);
-    //std::cout << serverRequest << "\n";
 }
 
 void Messenger::ExtendRequest(std::string appendedParameter)
@@ -76,6 +68,7 @@ void Messenger::ExtendRequest(std::string appendedParameter)
 bool Messenger::CheckUsernameForExistance(std::string Username)
 {
     SetRequestCode(CheckUsernameForExistance_Client);
+    //Programm war eine Zeile zu kurz, darum musste hier noch eine rein.
     ExtendRequest(Username);
     SendToServer();
     return(WaitForServerResponse());
@@ -124,16 +117,12 @@ void Messenger::ModePostAMessage()
         std::cout << "Please enter a message with maximum 280 characters which you want to post.\n";
         std::cin.ignore(10000, '\n');
         std::getline(std::cin, message);
-        ////char test = 0;
-        //char test = '\0';
         if (message.length() > 280)
         {
             std::cout << "Your message was too long.\n";
             continue;
         }
-        //message += test;
         PostAMessage(message);
-
         std::cout << "You posted this message: " << message << "\n";
         break;
     }
@@ -147,7 +136,6 @@ void Messenger::ModeUserSearch()
     std::cout << "You want to see the History of: \n" << username << "\n";
     CheckUsernameForExistance(username);
     bool doesUserExist = CheckUsernameForExistance(username);
-    std::cout << "The Request to the server gave back: \n" << doesUserExist << "\n";
     if (doesUserExist)
     {
         DisplayHistoryOfUser(username);
@@ -338,21 +326,7 @@ bool Messenger::WaitForServerResponse()
 
         if (FD_ISSET(serverSocket, &reads))
         {
-
             int bytesReceived = recv(serverSocket, receivedMessage, sizeof(receivedMessage), 0);
-            //std::cout << read << std:: endl;
-            //int i = -1;
-            //for (char c : read)
-            //{
-            //    std::cout << int(c); //<< std::endl;
-            //}
-            //while (true)
-            //{
-            //    i++;
-            //    //if (read[i] == 0) break;
-            //    std::cout << int(read[i]); //<< std::endl;
-
-            //}
             int val = 0; 
             switch (receivedMessage[0])
             {
@@ -379,8 +353,6 @@ bool Messenger::WaitForServerResponse()
             default:
                 break;
             }
-            printf("Received size: %d\n", sizeof(receivedMessage));
-            printf("Received: %s", receivedMessage);
             if (bytesReceived < 1)
             {
                 printf("Connection closed.\n");
@@ -392,32 +364,12 @@ bool Messenger::WaitForServerResponse()
 
 void Messenger::SendToServer()
 {
-
-    //strcpy_s(formattedRequest, serverRequest.c_str());
     memcpy(formattedRequest, serverRequest.data(), serverRequest.size());
-    //if (formattedRequest[0] == 4)
-    //{
-    //    for (char c : formattedRequest)
-    //    {
-    //        std::cout << int(c) << std::endl;
-
-    //    }
-    //}
-
     send(serverSocket, formattedRequest, sizeof(formattedRequest), 0);
 }
 
 void Messenger::MainMenu()
 {
-    //std::string usaaaname = "Nils";
-    //std::string paaasword = "1234";
-    //SetRequestCode(RegisterUser_Client);
-    //ExtendRequest(usaaaname);
-    //ExtendRequest(paaasword);
-    //SendToServer();
-    // 54Nils41234
-    //std::cout << "Keycode: " << char(serverRequest[0]) << "\n";
-    std::cout << "Keycode: " << serverRequest << "\n";
     std::string chosenOption = "";
     while (true)
     {
@@ -437,11 +389,6 @@ void Messenger::MainMenu()
 
 void Messenger::DisplayReceivedHistory()
 {
-    //for (int i = 0; i < 40; i++)
-    //{
-    //    std::cout << int(receivedMessage[i]) << std::endl;
-    //}
-    //std::cout << std::endl;
     int amountOfMessages = receivedMessage[1];
     int positionToRead = 2;
     int lengthOfUsername = GetStringLenght(receivedMessage, positionToRead);
@@ -449,10 +396,8 @@ void Messenger::DisplayReceivedHistory()
     std::string username = std::string(receivedMessage + positionToRead, lengthOfUsername);
     positionToRead += lengthOfUsername;
     std::cout << "Here is the History of the User \n" << username << "\n";
-
     for (int i = 0; i < amountOfMessages; i++)
     {
-        std::cout << "Start of loop of loop. amountOfMessages: " << amountOfMessages << "    i: " << i << "    positionToRead: " << positionToRead << std::endl;
         int timestamp = 0;
         for (int j = 0; j < 4; j++)
         {
@@ -465,23 +410,11 @@ void Messenger::DisplayReceivedHistory()
         std::stringstream ss;
         ss << std::put_time(&timeinfo1, "%d-%m-%Y %H:%M:%S");
         std::string timeString = ss.str();
-        std::cout << "This Message was posted: " << timeString << std::endl;
+        std::cout << "The following Message was posted at: " << timeString << std::endl;
         int lengthOfMessage = GetStringLenght(receivedMessage, positionToRead);
         positionToRead += 2;
         std::string message = std::string(receivedMessage+ positionToRead, lengthOfMessage);
         positionToRead += lengthOfMessage;
         std::cout << message << "\n";
-        std::cout << "End of loop. amountOfMessages: " << amountOfMessages << "i: " << i << "positionToRead: " << positionToRead << std::endl;
     }
 }
-
-//std::string usaaaname = "Nils";
-//std::string paaasword = "1234";
-//SetRequestCode(RegisterUser_Client);
-//ExtendRequest(std::to_string(usaaaname.length()));
-//ExtendRequest(usaaaname);
-//ExtendRequest(std::to_string(paaasword.length()));
-//ExtendRequest(paaasword);
-//SendToServer();
-//// 54Nils41234
-//std::cout << "Keycode: " << serverRequest << "\n";
