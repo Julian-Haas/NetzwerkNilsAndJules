@@ -8,25 +8,9 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "Server.h"
 
-
-//speichern der nutzer 
-std::vector<std::vector<std::string>> user(10, std::vector<std::string>(2));
-
-//speichern der tweets + nutzernamen 
-std::vector<std::vector<std::string>> tweets;
-
-//counter der nutzer
-int index = 0;
-std::string activeUser; 
-//id des nutzers der gerade angemeldet ist
-int userIndex = 0;
-int userTweetID = 0; 
-//tweet counter
-int tweetCounter = 0;
-char request[4096];
-
-std::string AddMessageLenght(std::string msg, int length)
+std::string Server::AddMessageLenght(std::string msg, int length)
 {
 	unsigned char val1;
 	unsigned char val2;
@@ -51,17 +35,17 @@ std::string AddMessageLenght(std::string msg, int length)
 	return msg;
 }
 
-int GetStringLenght(int start)
+int Server::GetStringLenght(int start)
 {
 	return request[start] + request[start + 1];
 }
-void SendToClient(SOCKET i, std::string msg)
+void Server::SendToClient(SOCKET i, std::string msg)
 {
 	char formatedAnswer[4096];
 	memcpy(formatedAnswer, msg.data(), msg.size());
 	formatedAnswer[msg.size()] = '\0';
 
-	if (formatedAnswer[0] == 103)
+	if (formatedAnswer[0] == 105)
 	{
 		for (char c : formatedAnswer)
 		{
@@ -73,7 +57,7 @@ void SendToClient(SOCKET i, std::string msg)
 }
 
 
-enum protocol
+enum Server::protocol
 {
 	CheckUsernameForExistance_Client = 1,
 	CheckPasswordForCorrectness_Client = 2,
@@ -87,31 +71,31 @@ enum protocol
 	RegisterUser_Server = 105
 };
 
-std::string GetPassword(int start, int lenght)
+std::string Server::GetPassword(int start, int lenght)
 {
-	std::string password = ""; 
-	for(int i = start; i < (start +lenght); i++)
+	std::string password = "";
+	for (int i = start; i < (start + lenght); i++)
 	{
-		password += request[i]; 
+		password += request[i];
 	}
-	return password; 
+	return password;
 }
 
-std::string ExtractTweet()
+std::string Server::ExtractTweet()
 {
 
-	int NameLenght = GetStringLenght(1); 
-    //1 + 2(NameLenght) + namelenght + 2(tweetLenght)  
+	int NameLenght = GetStringLenght(1);
+	//1 + 2(NameLenght) + namelenght + 2(tweetLenght)  
 	int tweetLenghtPos = NameLenght + 3;
 	int tweetLenght = GetStringLenght(tweetLenghtPos);
 	std::string tweet = std::string(request + NameLenght + 5, tweetLenght);
-	return tweet; 
+	return tweet;
 }
 
 /*
-  CheckForUserName in GetUserPost als security check verwenden  
+  CheckForUserName in GetUserPost als security check verwenden
 */
-bool CheckForUserName()
+bool Server::CheckForUserName()
 {
 	int nameLength = GetStringLenght(1);
 	//|1|4|0|116|101|115|116
@@ -120,47 +104,51 @@ bool CheckForUserName()
 	std::cout << "Username: " << activeUser << "\n";
 	for (int i = 0; i < user.size(); i++)
 	{
-		userTweetID = i; 
-		if (activeUser == user[i][0]) 
+		userTweetID = i;
+		if (activeUser == user[i][0])
 		{
-			userIndex = i; 
+			userIndex = i;
 			return true;
 		}
+	}
+	if (index >= user.size()) {
+		user.resize(index + 4); // Vergrößere den Vektor, wenn nötig
 	}
 	user[index][0] = activeUser;
 	return false;
 }
 
-std::string GetUserPosts()
+std::string Server::GetUserPosts()
 {
 	int usernameLenght = GetStringLenght(1);
 	std::string username = std::string(request + 3, usernameLenght);
-	std::string answer; 
+	std::string answer;
 	//speichern des Request Codes, der Länge des Nutzernamens + nutzernamen gemäß protokoll
 	char msgCode = char(DisplayHistoryOfUser_Server);
 	answer += msgCode;
 
-	for(int i = 0; i <= user.size()-1; i++)
+	for (int i = 0; i <= user.size() - 1; i++)
 	{
-		if(username == user[i][0])
+		if (username == user[i][0])
 		{
 			userTweetID = i; //falsch -> tweet id kann auch eine andere nummer als die nutzer id  sein...
-			break; 
+			break;
 		}
 	}
 	//Safe Posts
 	int endOfLoop = tweets[userTweetID].size() - 10;
-	int postAmount; 
+	int postAmount;
 	if (endOfLoop <= 0)
 	{
 		endOfLoop = 0;
-		postAmount = tweets[userTweetID].size(); 
-	} else 
-	{
-		postAmount = 10; 
+		postAmount = tweets[userTweetID].size();
 	}
-	char postAmountChar = postAmount; 
-	answer += postAmountChar; 
+	else
+	{
+		postAmount = 10;
+	}
+	char postAmountChar = postAmount;
+	answer += postAmountChar;
 	answer = AddMessageLenght(answer, usernameLenght);
 	answer.append(username);
 	//|103|TweetLänge|Tweet| TweetLänge | Tweet |
@@ -180,25 +168,25 @@ std::string GetUserPosts()
 	return answer;
 }
 
-void DisplayUserHistory(SOCKET i)
+void Server::DisplayUserHistory(SOCKET i)
 {
 	std::string msg = GetUserPosts();
-	SendToClient(i, msg); 
+	SendToClient(i, msg);
 }
 
 
-void CheckUserNameForExistance(SOCKET i)
+void Server::CheckUserNameForExistance(SOCKET i)
 {
 	printf("Handle Username: ");
 	bool failed = CheckForUserName();
-	std::string answer; 
+	std::string answer;
 	if (!failed) {
 
 		answer = char(CheckUsernameForExistance_Server);
-		char exitCode = char(2); 
-		answer += exitCode; 
+		char exitCode = char(2);
+		answer += exitCode;
 		std::cout << answer[1] << "\n";
-		SendToClient(i, answer); 
+		SendToClient(i, answer);
 	}
 	else {
 		answer = char(CheckUsernameForExistance_Server);
@@ -207,18 +195,18 @@ void CheckUserNameForExistance(SOCKET i)
 		//std::cout << answer[1] << "\n";
 		SendToClient(i, answer);
 	}
-	return; 
+	return;
 }
 
-void CheckPasswordForCorrectness(SOCKET i)
+void Server::CheckPasswordForCorrectness(SOCKET i)
 {
 	/*
 	|MSGCODE|LängeUsername|Username|Länge von der request|stuff|
 	*/
 	std::string password;
-	std::string answer; 
+	std::string answer;
 	int passwortStart = GetStringLenght(1) + 5;
-	int passwortLenght = GetStringLenght(passwortStart-2);
+	int passwortLenght = GetStringLenght(passwortStart - 2);
 	password = GetPassword(passwortStart, passwortLenght);
 	answer = "";
 	if (user[userIndex][1] == password)
@@ -232,38 +220,38 @@ void CheckPasswordForCorrectness(SOCKET i)
 	else
 	{
 		answer = char(CheckPasswordForCorrectness_Server);
-		char returnCode = char(2); 
-		answer += returnCode; 
+		char returnCode = char(2);
+		answer += returnCode;
 		SendToClient(i, answer);
 	}
 }
 
-int GetUserTweetID()
+int Server::GetUserTweetID()
 {
 	std::string answer;
 	int usernameLenght = GetStringLenght(1);
-	std::string username = std::string(request + 3, usernameLenght); 
+	std::string username = std::string(request + 3, usernameLenght);
 	for (int i = 0; i <= user.size() - 1; i++)
 	{
 		if (username == user[i][0])
 		{
-			return i; 
+			return i;
 		}
 	}
-	return -1; 
+	return -1;
 }
-int PostUserMessage(SOCKET i)
+int Server::PostUserMessage(SOCKET i)
 {
-	std::string answer; 
+	std::string answer;
 	int userTweetID = GetUserTweetID();
-	if(userTweetID == -1)
+	if (userTweetID == -1)
 	{
 		answer.clear();
 		answer += PostAMessage_Server;
-		char exitCode = 2; 
+		char exitCode = 2;
 		answer += exitCode;
 		SendToClient(i, answer);
-		return-1; 
+		return-1;
 	}
 	answer = ExtractTweet();
 
@@ -278,19 +266,22 @@ int PostUserMessage(SOCKET i)
 	char exitCode = 2;
 	answer += exitCode;
 	SendToClient(i, answer);
-	return 0; 
+	return 0;
 }
 
-void FinishRegistration(SOCKET i)
+void Server::FinishRegistration(SOCKET i)
 {
-	std::string password; 
-	std::string answer; 
+	std::string password;
+	std::string answer;
 	//int passwortStart = request[1] + 3 - '0';
 	//int passwortLenght = request[passwortStart - 1] - '0';
 	int passwortStart = GetStringLenght(1) + 5;
 	int passwortLenght = GetStringLenght(passwortStart - 2);
 	password = GetPassword(passwortStart, passwortLenght);
 	std::cout << "Password: " << password << std::endl;
+	if (user[index].size() < 2) {
+		user[index].resize(2); // Größe des inneren Vektors anpassen, wenn nötig
+	}
 	user[index][1] = password;
 	answer = "";
 	answer += RegisterUser_Server;
@@ -299,22 +290,22 @@ void FinishRegistration(SOCKET i)
 	index++;
 	userIndex = index;
 }
-void HandleIncomingRequest(bool& readingRequest, SOCKET i) {
+void Server::HandleIncomingRequest(bool& readingRequest, SOCKET i) {
 
 	int postWasSuccesFull;
-	std::string temp = request; 
-	for(int x = 0; x < 30; x++)
+	std::string temp = request;
+	for (int x = 0; x < 30; x++)
 	{
 		std::cout << "Inhalt der Anfrage: \n" << int(request[x]) << "\n";
 	}
 
 	switch (request[0]) {
 	case 1:
-		CheckUserNameForExistance(i); 
+		CheckUserNameForExistance(i);
 		readingRequest = false;
 		break;
 	case 2:
-		CheckPasswordForCorrectness(i); 
+		CheckPasswordForCorrectness(i);
 		readingRequest = false;
 		break;
 	case 3:
@@ -322,14 +313,14 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i) {
 		break;
 	case 4:
 		postWasSuccesFull = PostUserMessage(i);
-		if(postWasSuccesFull == -1)
+		if (postWasSuccesFull == -1)
 		{
 			std::cout << "Failed to post the Message:\n Error code: -1! Username not found!\n";
 		}
 		readingRequest = false;
 		break;
 	case 5:
-		FinishRegistration(i); 
+		FinishRegistration(i);
 		readingRequest = false;
 		break;
 	default:
@@ -340,8 +331,9 @@ void HandleIncomingRequest(bool& readingRequest, SOCKET i) {
 }
 
 
-int main(int argc, char* argv[])
+int Server::InitServer(int argc, char* argv[])
 {
+	user = std::vector<std::vector<std::string>>(10, std::vector<std::string>(2)); 
 	//server set up
 	WSAData d;
 	bool readingRequest = false;
@@ -423,7 +415,7 @@ int main(int argc, char* argv[])
 				{
 					int bytesReceived = recv(i, request, sizeof(request), 0);
 					if (bytesReceived > 0) {
-						HandleIncomingRequest(readingRequest, i); 
+						HandleIncomingRequest(readingRequest, i);
 					}
 					else if (bytesReceived == 0) {
 						// Verbindung geschlossen
