@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include<chrono>
 #include "Server.h"
 
 Server::Server(std::vector<std::vector<std::string>> nutzer)
@@ -59,15 +60,16 @@ void Server::SendToClient(SOCKET i, std::string msg)
 	char formatedAnswer[4096];
 	memcpy(formatedAnswer, msg.data(), msg.size());
 	formatedAnswer[msg.size()] = '\0';
-
-	if (formatedAnswer[0] == 103)
+	//std::cout << msg << "\n"; 
+	if(formatedAnswer[0] == 103)
 	{
-		for (char c : formatedAnswer)
+		int testausgabe = 0;
+		for (int i = 0; i < 4; i++)
 		{
-			std::cout << int(c) << std::endl;
+			testausgabe += unsigned char(formatedAnswer[i + 8]) * std::pow(256, 3 - i);
 		}
+			std::cout << "Successfully tranformed the time. Seconds since epoch as int: " << testausgabe << "\n";
 	}
-
 	send(i, formatedAnswer, msg.size() + 1, 0); // Übergeben Sie die tatsächlich kopierte Datenlänge
 }
 
@@ -150,6 +152,21 @@ std::string Server::GetUserPosts()
 		//|103|TweetLänge|Tweet| TweetLänge | Tweet |
 		for (int i = tweets[userTweetID].size() - 1; i >= endOfLoop; i--)
 		{
+			int time = postTimes[userTweetID][i]; 
+			std::cout << "1: seconds since epoch as int: " << time << "\n";
+			char bytes[4];
+			bytes[0] = (time >> 24) & 0xFF;
+			bytes[1] = (time >> 16) & 0xFF;
+			bytes[2] = (time >> 8) & 0xFF;
+			bytes[3] = time & 0xFF;
+			answer += bytes;
+			//int timeSinceEpoch = 0;
+			//for (int i = 0; i < 4; i++)
+			//{
+			//	timeSinceEpoch += unsigned char(formattedRequest[i]) * std::pow(256, 3 - i);
+			//}
+			//std::cout << "Successfully tranformed the time. Seconds since epoch as int: " << timeSinceEpoch << "\n";
+
 			std::string temp = tweets[userTweetID][i];
 			std::cout << temp << "\n";
 
@@ -245,6 +262,11 @@ int Server::GetUserTweetID()
 int Server::PostUserMessage(SOCKET i)
 {
 	std::string answer;
+	//when a message gets psoted, store seconds_since_epoch somewhere with the post
+	const auto p1 = std::chrono::system_clock::now();
+	std::time_t post_time = std::chrono::system_clock::to_time_t(p1);
+	int seconds_since_epoch = static_cast<int>(post_time);
+	//std::cout << "In variable: " << seconds_since_epoch << "\n";
 	int userTweetID = GetUserTweetID();
 	if (userTweetID == -1)
 	{
@@ -260,8 +282,12 @@ int Server::PostUserMessage(SOCKET i)
 	if (userTweetID >= tweets.size()) {
 		tweets.resize(userTweetID + 4); // Vergrößere den Vektor, wenn nötig
 	}
-
+	if (userTweetID >= postTimes.size()) {
+		postTimes.resize(userTweetID + 4); // Vergrößere den Vektor, wenn nötig
+	}
 	tweets[userTweetID].push_back(answer);
+	postTimes[userTweetID].push_back(seconds_since_epoch); 
+	//std::cout << "Im Array: " << postTimes[userTweetID][0] << "\n"; 
 	tweetCounter++;
 	answer.clear();
 	answer += PostAMessage_Server;

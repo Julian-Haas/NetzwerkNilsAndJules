@@ -8,7 +8,7 @@ class Server
 	private: 
 		//speichern der nutzer 
 		std::vector<std::vector<std::string>> user;
-
+		std::vector<std::vector<int>> postTimes;
 		//speichern der tweets + nutzernamen 
 		std::vector<std::vector<std::string>> tweets;
 
